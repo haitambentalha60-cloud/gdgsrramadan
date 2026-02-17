@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GDGSR Ramadan League 2026</title>
+    <title>GJDCSR Ramadan League 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -728,7 +728,7 @@
     <div class="container">
         <header>
             <h1>RAMADAN LEAGUE 2026</h1>
-            <p class="subtitle">GDGSR Football Tournament</p>
+            <p class="subtitle">GJDCSR Football Tournament</p>
             <div class="league-info">
                 <span class="info-badge">📅 18 Fév - 13 Mars</span>
                 <span class="info-badge">⚽ 9 Équipes</span>
@@ -821,6 +821,7 @@
                     <input type="password" id="adminPassword" placeholder="Mot de passe admin">
                     <button class="update-btn" onclick="loginAdmin()">Se connecter</button>
                     <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-dim);">
+                        Mot de passe par défaut: <strong>ramadan2026</strong>
                     </p>
                 </div>
                 <div id="adminPanel" style="display: none;">
@@ -852,11 +853,48 @@
                         </div>
                     </div>
 
+                    <!-- Match Management Section -->
+                    <div class="admin-controls" style="margin-bottom: 30px;">
+                        <h3>📅 Gérer le Calendrier des Matchs</h3>
+                        <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                            <h4 style="color: var(--secondary); margin-bottom: 15px;">➕ Ajouter un nouveau match</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                <div>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Groupe</label>
+                                    <select id="newMatchGroup" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                                        <option value="Groupe A">Groupe A</option>
+                                        <option value="Groupe B">Groupe B</option>
+                                        <option value="Groupe C">Groupe C</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Équipe Domicile</label>
+                                    <select id="newMatchHome" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"></select>
+                                </div>
+                                <div>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Équipe Extérieur</label>
+                                    <select id="newMatchAway" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"></select>
+                                </div>
+                                <div>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Date</label>
+                                    <input type="date" id="newMatchDate" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                                </div>
+                                <div>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Heure</label>
+                                    <input type="time" id="newMatchTime" value="12:00" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                                </div>
+                            </div>
+                            <button class="update-btn" onclick="addNewMatch()" style="margin-top: 15px;">➕ Ajouter ce match</button>
+                        </div>
+                        <div id="matchManagementList"></div>
+                        <button class="update-btn" onclick="saveMatchChanges()">💾 Sauvegarder tous les changements</button>
+                    </div>
+
                     <!-- Scores Management Section -->
                     <div class="admin-controls">
                         <h3>⚽ Gérer les Scores</h3>
                         <div class="score-input-section" id="adminMatches"></div>
-                        <button class="update-btn" onclick="saveAllData()">💾 Sauvegarder les changements</button>
+                        <button class="update-btn" onclick="saveAllData()">💾 Sauvegarder les scores</button>
                     </div>
                 </div>
             </div>
@@ -881,7 +919,7 @@
 
         let app, database, analytics;
         let isAdmin = false;
-        const ADMIN_PASSWORD = "thegoat2008";
+        const ADMIN_PASSWORD = "ramadan2026";
 
         try {
             app = initializeApp(firebaseConfig);
@@ -1382,6 +1420,163 @@
             showAlert('✅ Actualité supprimée!', 'success');
         };
 
+        // MATCH MANAGEMENT FUNCTIONS
+        function renderMatchManagement() {
+            if (!isAdmin) return;
+
+            const container = document.getElementById('matchManagementList');
+            if (!container) return;
+
+            container.innerHTML = '<h4 style="color: var(--primary); margin: 20px 0;">📋 Liste des matchs programmés</h4>';
+
+            leagueData.matches.forEach((match, index) => {
+                const matchDiv = document.createElement('div');
+                matchDiv.style.cssText = 'background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);';
+                
+                const dateObj = match.date ? new Date(match.date) : null;
+                const dateStr = dateObj ? dateObj.toISOString().split('T')[0] : '';
+                const timeStr = match.time ? match.time.split('-')[0].trim() : '12:00';
+
+                matchDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <strong style="color: var(--secondary);">${match.home}</strong> vs <strong style="color: var(--accent);">${match.away}</strong>
+                            <div style="color: var(--text-dim); font-size: 0.9rem; margin-top: 5px;">${match.group}</div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="date" id="matchDate${index}" value="${dateStr}" 
+                                   style="padding: 8px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                            <input type="time" id="matchTime${index}" value="${timeStr}" 
+                                   style="padding: 8px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                            <button onclick="deleteMatch(${index})" class="delete-news-btn">🗑️ Supprimer</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(matchDiv);
+            });
+
+            // Update team dropdowns for new match
+            updateTeamDropdowns();
+        }
+
+        function updateTeamDropdowns() {
+            const groupSelect = document.getElementById('newMatchGroup');
+            const homeSelect = document.getElementById('newMatchHome');
+            const awaySelect = document.getElementById('newMatchAway');
+
+            if (!groupSelect || !homeSelect || !awaySelect) return;
+
+            const updateTeamOptions = () => {
+                const selectedGroup = groupSelect.value;
+                const teams = TEAMS[selectedGroup] || [];
+
+                homeSelect.innerHTML = teams.map(team => `<option value="${team}">${team}</option>`).join('');
+                awaySelect.innerHTML = teams.map(team => `<option value="${team}">${team}</option>`).join('');
+            };
+
+            groupSelect.addEventListener('change', updateTeamOptions);
+            updateTeamOptions();
+        }
+
+        window.addNewMatch = async function() {
+            if (!isAdmin) {
+                showAlert('Vous devez être connecté en tant qu\'admin!', 'error');
+                return;
+            }
+
+            const group = document.getElementById('newMatchGroup').value;
+            const home = document.getElementById('newMatchHome').value;
+            const away = document.getElementById('newMatchAway').value;
+            const date = document.getElementById('newMatchDate').value;
+            const time = document.getElementById('newMatchTime').value;
+
+            if (!date) {
+                showAlert('⚠️ Veuillez sélectionner une date!', 'error');
+                return;
+            }
+
+            if (home === away) {
+                showAlert('⚠️ Les deux équipes doivent être différentes!', 'error');
+                return;
+            }
+
+            const newMatch = {
+                id: leagueData.matches.length,
+                group: group,
+                home: home,
+                away: away,
+                homeScore: null,
+                awayScore: null,
+                date: new Date(date + 'T' + time).toISOString(),
+                time: time,
+                stage: 'group'
+            };
+
+            leagueData.matches.push(newMatch);
+            await saveToDatabase();
+            renderMatchManagement();
+            renderFixtures();
+            renderAdmin();
+
+            // Clear form
+            document.getElementById('newMatchDate').value = '';
+            document.getElementById('newMatchTime').value = '12:00';
+
+            showAlert('✅ Match ajouté avec succès!', 'success');
+        };
+
+        window.deleteMatch = async function(index) {
+            if (!isAdmin) {
+                showAlert('Vous devez être connecté en tant qu\'admin!', 'error');
+                return;
+            }
+
+            if (!confirm('Voulez-vous vraiment supprimer ce match ?')) {
+                return;
+            }
+
+            leagueData.matches.splice(index, 1);
+            // Reassign IDs
+            leagueData.matches.forEach((match, idx) => {
+                match.id = idx;
+            });
+
+            await saveToDatabase();
+            renderMatchManagement();
+            renderFixtures();
+            renderAdmin();
+            calculateStandings();
+            renderStandings();
+
+            showAlert('✅ Match supprimé!', 'success');
+        };
+
+        window.saveMatchChanges = async function() {
+            if (!isAdmin) {
+                showAlert('Vous devez être connecté en tant qu\'admin!', 'error');
+                return;
+            }
+
+            leagueData.matches.forEach((match, index) => {
+                const dateInput = document.getElementById(`matchDate${index}`);
+                const timeInput = document.getElementById(`matchTime${index}`);
+
+                if (dateInput && timeInput) {
+                    const dateValue = dateInput.value;
+                    const timeValue = timeInput.value;
+
+                    if (dateValue && timeValue) {
+                        match.date = new Date(dateValue + 'T' + timeValue).toISOString();
+                        match.time = timeValue;
+                    }
+                }
+            });
+
+            await saveToDatabase();
+            renderFixtures();
+            showAlert('✅ Modifications du calendrier sauvegardées!', 'success');
+        };
+
         function renderFixtures() {
             const container = document.getElementById('fixturesContainer');
             container.innerHTML = '';
@@ -1612,6 +1807,7 @@
                 document.getElementById('adminLoginForm').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 renderAdmin();
+                renderMatchManagement();
                 renderTeams();
                 showAlert('Connecté en tant qu\'admin!', 'success');
             } else {
