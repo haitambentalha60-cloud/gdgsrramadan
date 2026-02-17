@@ -715,21 +715,20 @@
         measurementId: "G-BE6D61PBDN"
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const database = getDatabase(app);
     
+    // Initialize Firebase
+    let app, database, analytics;
     let isAdmin = false;
     const ADMIN_PASSWORD = "ramadan2026";
-        try {
-            app = initializeApp(firebaseConfig);
-            database = getDatabase(app);
-            console.log("Firebase initialisé avec succès");
-        } catch (error) {
-            console.error("Erreur Firebase:", error);
-            showError("Configuration Firebase non complétée. Veuillez configurer vos identifiants Firebase.");
-        }
+    
+    try {
+        app = initializeApp(firebaseConfig);
+        analytics = getAnalytics(app);
+        database = getDatabase(app);
+        console.log("Firebase initialisé avec succès");
+    } catch (error) {
+        console.error("Erreur Firebase:", error);
+    }
 
         // TEAMS DATA
         const TEAMS = {
@@ -1307,4 +1306,5 @@ FONCTIONNALITÉS
 ✅ Responsive (mobile-friendly)
 
 ═══════════════════════════════════════════════════════════════════
+
 -->
