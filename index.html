@@ -427,6 +427,7 @@
             content: '⚽';
             font-size: 0.8rem;
             opacity: 0.5;
+            flex-shrink: 0;
         }
 
         .player-input {
@@ -638,6 +639,15 @@
             font-size: 1rem;
         }
 
+        .news-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
         .news-form {
             background: rgba(0, 0, 0, 0.3);
             padding: 25px;
@@ -811,6 +821,7 @@
                     <input type="password" id="adminPassword" placeholder="Mot de passe admin">
                     <button class="update-btn" onclick="loginAdmin()">Se connecter</button>
                     <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-dim);">
+                        Mot de passe par défaut: <strong>ramadan2026</strong>
                     </p>
                 </div>
                 <div id="adminPanel" style="display: none;">
@@ -824,6 +835,7 @@
                         <div class="news-form">
                             <input type="text" id="newsTitle" placeholder="Titre de l'actualité">
                             <textarea id="newsContent" placeholder="Contenu de l'actualité..."></textarea>
+                            <input type="text" id="newsImageUrl" placeholder="URL de l'image (optionnel)">
                             <select id="newsCategory">
                                 <option value="info">📢 Information</option>
                                 <option value="match">⚽ Match</option>
@@ -863,7 +875,7 @@
 
         let app, database, analytics;
         let isAdmin = false;
-        const ADMIN_PASSWORD = "thegoat2008";
+        const ADMIN_PASSWORD = "ramadan2026";
 
         try {
             app = initializeApp(firebaseConfig);
@@ -902,6 +914,7 @@
                         leagueData.teams[teamName] = {
                             group: group,
                             players: Array(8).fill(''),
+                            playerNumbers: Array(8).fill(''),
                             stats: {
                                 played: 0,
                                 won: 0,
@@ -912,16 +925,21 @@
                                 points: 0
                             }
                         };
-                    } else if (!leagueData.teams[teamName].stats) {
-                        leagueData.teams[teamName].stats = {
-                            played: 0,
-                            won: 0,
-                            drawn: 0,
-                            lost: 0,
-                            goalsFor: 0,
-                            goalsAgainst: 0,
-                            points: 0
-                        };
+                    } else {
+                        if (!leagueData.teams[teamName].stats) {
+                            leagueData.teams[teamName].stats = {
+                                played: 0,
+                                won: 0,
+                                drawn: 0,
+                                lost: 0,
+                                goalsFor: 0,
+                                goalsAgainst: 0,
+                                points: 0
+                            };
+                        }
+                        if (!leagueData.teams[teamName].playerNumbers) {
+                            leagueData.teams[teamName].playerNumbers = Array(8).fill('');
+                        }
                     }
                 });
             });
@@ -933,6 +951,7 @@
                     leagueData.teams[team] = {
                         group: group,
                         players: Array(8).fill(''),
+                        playerNumbers: Array(8).fill(''),
                         stats: {
                             played: 0,
                             won: 0,
@@ -969,7 +988,7 @@
                 }
             });
 
-            const startDate = new Date('2026-02-19');
+            const startDate = new Date('2026-02-18');
             const endDate = new Date('2026-03-13');
             let currentDate = new Date(startDate);
             let matchIndex = 0;
@@ -1266,6 +1285,7 @@
                             <div class="news-badge">${categoryIcons[news.category] || '📢'} ${categoryLabels[news.category] || 'Info'}</div>
                         </div>
                         <h3 class="news-title">${news.title}</h3>
+                        ${news.imageUrl ? `<img src="${news.imageUrl}" alt="${news.title}" class="news-image" onerror="this.style.display='none'">` : ''}
                         <div class="news-content">${news.content}</div>
                         ${isAdmin ? `<button class="delete-news-btn" onclick="deleteNews(${news.id})" style="margin-top: 15px;">🗑️ Supprimer</button>` : ''}
                     </div>
@@ -1281,6 +1301,7 @@
 
             const title = document.getElementById('newsTitle').value.trim();
             const content = document.getElementById('newsContent').value.trim();
+            const imageUrl = document.getElementById('newsImageUrl').value.trim();
             const category = document.getElementById('newsCategory').value;
 
             if (!title || !content) {
@@ -1292,6 +1313,7 @@
                 id: Date.now(),
                 title: title,
                 content: content,
+                imageUrl: imageUrl || null,
                 category: category,
                 timestamp: Date.now()
             };
@@ -1308,6 +1330,7 @@
             // Clear form
             document.getElementById('newsTitle').value = '';
             document.getElementById('newsContent').value = '';
+            document.getElementById('newsImageUrl').value = '';
             document.getElementById('newsCategory').value = 'info';
 
             showAlert('✅ Actualité publiée avec succès!', 'success');
@@ -1385,19 +1408,28 @@
 
                     let html = `<h3>${teamName}</h3>
                         <p style="color: var(--text-dim); margin-bottom: 15px;">${group}</p>
-                        <h4>Effectif (8 joueurs, 5 jouent)</h4>
+                        <h4>Effectif (8 joueurs, 6 jouent)</h4>
                         <ul class="player-list">`;
 
                     for (let i = 0; i < 8; i++) {
                         const player = leagueData.teams[teamName]?.players[i] || '';
+                        const playerNumber = leagueData.teams[teamName]?.playerNumbers?.[i] || '';
                         const disabled = !isAdmin ? 'disabled' : '';
-                        html += `<li>
+                        html += `<li style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" 
+                                   class="player-input" 
+                                   placeholder="#" 
+                                   value="${playerNumber}"
+                                   ${disabled}
+                                   onchange="window.updatePlayerNumber('${teamName}', ${i}, this.value)"
+                                   style="width: 60px; text-align: center; font-weight: 700; color: var(--secondary);">
                             <input type="text" 
                                    class="player-input" 
                                    placeholder="Joueur ${i + 1}" 
                                    value="${player}"
                                    ${disabled}
-                                   onchange="window.updatePlayer('${teamName}', ${i}, this.value)">
+                                   onchange="window.updatePlayer('${teamName}', ${i}, this.value)"
+                                   style="flex: 1;">
                         </li>`;
                     }
 
@@ -1444,6 +1476,18 @@
                 leagueData.teams[teamName].players[index] = value;
                 await saveToDatabase();
                 showAlert('Joueur mis à jour!', 'success');
+            }
+        };
+
+        window.updatePlayerNumber = async function(teamName, index, value) {
+            if (!isAdmin) return;
+            if (leagueData.teams[teamName]) {
+                if (!leagueData.teams[teamName].playerNumbers) {
+                    leagueData.teams[teamName].playerNumbers = Array(8).fill('');
+                }
+                leagueData.teams[teamName].playerNumbers[index] = value;
+                await saveToDatabase();
+                showAlert('Numéro mis à jour!', 'success');
             }
         };
 
@@ -1627,5 +1671,3 @@
     </script>
 </body>
 </html>
-
-
