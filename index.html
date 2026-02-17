@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GJDCSR Ramadan League 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00b894;
+            --primary-dark: #00916d;
+            --secondary: #fdcb6e;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --dark-light: #636e72;
+            --bg: #0a0e27;
+            --bg-light: #141937;
+            --text: #dfe6e9;
+            --text-dim: #b2bec3;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.1;
+            background: 
+                radial-gradient(circle at 20% 50%, var(--primary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--accent) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, var(--secondary) 0%, transparent 50%);
+            animation: bgShift 20s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 30px) scale(1.1); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg) 100%);
+            border-radius: 30px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(0, 184, 148, 0.2);
+        }
+
+        header::before {
+            content: '⚽';
+            position: absolute;
+            font-size: 300px;
+            top: -80px;
+            right: -50px;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+
+        h1 {
+            font-family: 'Righteous', cursive;
+            font-size: 4rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            letter-spacing: 2px;
+            animation: fadeIn 1s ease-out 0.3s backwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .league-info {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            animation: fadeIn 1s ease-out 0.6s backwards;
+        }
+
+        .info-badge {
+            background: rgba(0, 184, 148, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+            font-weight: 600;
+        }
+
+        /* Login/Admin Status */
+        .auth-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: var(--bg-light);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 2px solid var(--accent);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .auth-btn {
+            padding: 8px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .auth-btn:hover {
+            background: #e056a0;
+            transform: translateY(-2px);
+        }
+
+        .auth-btn.logout {
+            background: var(--dark-light);
+        }
+
+        /* Login Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-light);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--accent);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            font-family: 'Righteous', cursive;
+            color: var(--accent);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Barlow', sans-serif;
+            font-size: 1rem;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content button:hover {
+            background: #e056a0;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 2rem;
+            cursor: pointer;
+            width: auto;
+            padding: 0;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 15px 30px;
+            background: var(--bg-light);
+            border: 2px solid var(--primary);
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Barlow', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 184, 148, 0.3);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Groups */
+        .groups-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .group {
+            background: var(--bg-light);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .group:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 30px rgba(0, 184, 148, 0.2);
+        }
+
+        .group h3 {
+            font-family: 'Righteous', cursive;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .standings-table th {
+            background: rgba(0, 184, 148, 0.2);
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .standings-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .standings-table tr:hover {
+            background: rgba(0, 184, 148, 0.05);
+        }
+
+        .team-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .position {
+            width: 40px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .qualified {
+            background: rgba(0, 184, 148, 0.1);
+        }
+
+        .best-second {
+            background: rgba(253, 203, 110, 0.1);
+        }
+
+        /* Fixtures */
+        .fixtures-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .matchday {
+            background: var(--bg-light);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(253, 203, 110, 0.3);
+        }
+
+        .matchday h3 {
+            font-family: 'Righteous', cursive;
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .match {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .match:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .match-teams {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .team-home, .team-away {
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .team-home {
+            text-align: right;
+        }
+
+        .team-away {
+            text-align: left;
+        }
+
+        .match-vs {
+            color: var(--text-dim);
+            font-weight: 700;
+            padding: 0 15px;
+        }
+
+        .match-time {
+            color: var(--secondary);
+            font-weight: 600;
+            margin-left: 20px;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        /* Teams */
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .team-card {
+            background: var(--bg-light);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(253, 122, 168, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 30px rgba(253, 122, 168, 0.2);
+        }
+
+        .team-card h3 {
+            font-family: 'Righteous', cursive;
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .team-card h4 {
+            color: var(--text-dim);
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .player-list {
+            list-style: none;
+        }
+
+        .player-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-list li::before {
+            content: '⚽';
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
+
+        .player-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 8px;
+            width: 100%;
+            font-family: 'Barlow', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .player-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(253, 122, 168, 0.1);
+        }
+
+        .player-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Admin Panel */
+        .admin-controls {
+            background: var(--bg-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid var(--accent);
+        }
+
+        .admin-controls h3 {
+            color: var(--accent);
+            font-family: 'Righteous', cursive;
+            margin-bottom: 20px;
+        }
+
+        .score-input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .score-match {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .score-match label {
+            display: block;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .score-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .score-inputs input {
+            width: 60px;
+            background: rgba(0, 184, 148, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .update-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .update-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: var(--text-dim);
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .subtitle { font-size: 1rem; }
+            .groups-container {
+                grid-template-columns: 1fr;
+            }
+            .auth-status {
+                position: static;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <!-- Auth Status -->
+    <div class="auth-status">
+        <span id="authStatusText">👤 Mode Visiteur</span>
+        <button class="auth-btn" id="authBtn" onclick="showLoginModal()">Admin Login</button>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeLoginModal()">×</button>
+            <h2>🔐 Admin Login</h2>
+            <input type="password" id="adminPassword" placeholder="Mot de passe admin">
+            <button onclick="login()">Se connecter</button>
+            <p style="color: var(--text-dim); margin-top: 15px; text-align: center; font-size: 0.9rem;">
+                Mot de passe par défaut: <strong>ramadan2026</strong>
+            </p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1>RAMADAN LEAGUE 2026</h1>
+            <p class="subtitle">GDGSR Football Tournament</p>
+            <div class="league-info">
+                <span class="info-badge">📅 Feb 18 - Mar 13</span>
+                <span class="info-badge">⚽ 12 Teams</span>
+                <span class="info-badge">🏆 3 Groups</span>
+            </div>
+        </header>
+
+        <nav>
+            <button class="nav-btn active" onclick="showSection('standings')">Standings</button>
+            <button class="nav-btn" onclick="showSection('fixtures')">Fixtures</button>
+            <button class="nav-btn" onclick="showSection('teams')">Teams</button>
+            <button class="nav-btn" onclick="showSection('admin')">Admin</button>
+        </nav>
+
+        <!-- STANDINGS SECTION -->
+        <div id="standings" class="section active">
+            <div class="loading" id="standingsLoading">Chargement des classements...</div>
+            <div class="groups-container" id="groupsContainer"></div>
+        </div>
+
+        <!-- FIXTURES SECTION -->
+        <div id="fixtures" class="section">
+            <div class="loading" id="fixturesLoading">Chargement des matchs...</div>
+            <div class="fixtures-container" id="fixturesContainer"></div>
+        </div>
+
+        <!-- TEAMS SECTION -->
+        <div id="teams" class="section">
+            <div class="loading" id="teamsLoading">Chargement des équipes...</div>
+            <div class="teams-grid" id="teamsGrid"></div>
+        </div>
+
+        <!-- ADMIN SECTION -->
+        <div id="admin" class="section">
+            <div id="adminNotAuth" style="text-align: center; padding: 60px; color: var(--text-dim);">
+                <h2 style="font-family: 'Righteous', cursive; color: var(--accent); margin-bottom: 20px;">🔒 Accès Admin Requis</h2>
+                <p>Connectez-vous en tant qu'admin pour modifier les résultats.</p>
+            </div>
+            <div class="admin-controls" id="adminPanel" style="display: none;">
+                <h3>Mise à jour des résultats</h3>
+                <div class="score-input-section" id="adminMatches"></div>
+                <button class="update-btn" onclick="saveAllData()">💾 Sauvegarder les modifications</button>
+            </div>
+        </div>
+    </div>
+
+<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, set, get, onValue, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDAGuFQg0ofptIPk2MBvwBQQYtZUDdX8Dk",
+        authDomain: "gdgsrramadan.firebaseapp.com",
+        databaseURL: "https://gdgsrramadan-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "gdgsrramadan",
+        storageBucket: "gdgsrramadan.firebasestorage.app",
+        messagingSenderId: "526902571325",
+        appId: "1:526902571325:web:886c4939b9cf422fe05554",
+        measurementId: "G-BE6D61PBDN"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+    
+    let isAdmin = false;
+    const ADMIN_PASSWORD = "ramadan2026";
+        try {
+            app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+            console.log("Firebase initialisé avec succès");
+        } catch (error) {
+            console.error("Erreur Firebase:", error);
+            showError("Configuration Firebase non complétée. Veuillez configurer vos identifiants Firebase.");
+        }
+
+        // TEAMS DATA
+        const TEAMS = {
+            'Group A': ['2BAC SM2', '2BAC SPC3', '2BAC SPC2', '2BAC SPC1'],
+            'Group B': ['2BAC SEG', '1BAC SM2', '1BAC SM1', '1BAC Scup'],
+            'Group C': ['1BAC SEG', 'TCSF3', 'TCSF2', 'TCSF1']
+        };
+
+        let leagueData = {
+            teams: {},
+            matches: [],
+            standings: {}
+        };
+
+        // Auth functions
+        window.showLoginModal = function() {
+            document.getElementById('loginModal').classList.add('active');
+        };
+
+        window.closeLoginModal = function() {
+            document.getElementById('loginModal').classList.remove('active');
+            document.getElementById('adminPassword').value = '';
+        };
+
+        window.login = function() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                updateAuthUI();
+                closeLoginModal();
+                alert('✅ Connecté en tant qu\'admin !');
+                renderTeams();
+                renderAdmin();
+            } else {
+                alert('❌ Mot de passe incorrect');
+            }
+        };
+
+        window.logout = function() {
+            isAdmin = false;
+            updateAuthUI();
+            renderTeams();
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('adminNotAuth').style.display = 'block';
+        };
+
+        function updateAuthUI() {
+            const statusText = document.getElementById('authStatusText');
+            const authBtn = document.getElementById('authBtn');
+            
+            if (isAdmin) {
+                statusText.textContent = '👑 Mode Admin';
+                authBtn.textContent = 'Déconnexion';
+                authBtn.onclick = logout;
+                authBtn.classList.add('logout');
+            } else {
+                statusText.textContent = '👤 Mode Visiteur';
+                authBtn.textContent = 'Admin Login';
+                authBtn.onclick = showLoginModal;
+                authBtn.classList.remove('logout');
+            }
+        }
+
+        // Initialize teams
+        function initializeTeams() {
+            Object.keys(TEAMS).forEach(group => {
+                TEAMS[group].forEach(team => {
+                    leagueData.teams[team] = {
+                        group: group,
+                        players: Array(7).fill(''),
+                        stats: {
+                            played: 0,
+                            won: 0,
+                            drawn: 0,
+                            lost: 0,
+                            goalsFor: 0,
+                            goalsAgainst: 0,
+                            points: 0
+                        }
+                    };
+                });
+            });
+        }
+
+        // Generate fixtures
+        function generateFixtures() {
+            const fixtures = [];
+            let matchId = 0;
+            
+            Object.keys(TEAMS).forEach(group => {
+                const teams = TEAMS[group];
+                for (let i = 0; i < teams.length; i++) {
+                    for (let j = i + 1; j < teams.length; j++) {
+                        fixtures.push({
+                            id: matchId++,
+                            group: group,
+                            home: teams[i],
+                            away: teams[j],
+                            homeScore: null,
+                            awayScore: null,
+                            date: null,
+                            stage: 'group'
+                        });
+                    }
+                }
+            });
+
+            // Schedule matches
+            const startDate = new Date('2026-02-18');
+            const endDate = new Date('2026-03-13');
+            let currentDate = new Date(startDate);
+            let matchIndex = 0;
+            
+            while (currentDate <= endDate && matchIndex < fixtures.length) {
+                const dayOfWeek = currentDate.getDay();
+                
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    if (dayOfWeek === 5) {
+                        for (let i = 0; i < 6 && matchIndex < fixtures.length; i++) {
+                            fixtures[matchIndex].date = currentDate.toISOString();
+                            fixtures[matchIndex].time = `12:00-12:30 (Match ${i + 1}/6)`;
+                            matchIndex++;
+                        }
+                    } else {
+                        if (Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24)) % 2 === 0) {
+                            fixtures[matchIndex].date = currentDate.toISOString();
+                            fixtures[matchIndex].time = '12:00-12:30';
+                            matchIndex++;
+                        }
+                    }
+                }
+                
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            leagueData.matches = fixtures;
+        }
+
+        // Calculate standings
+        function calculateStandings() {
+            Object.keys(leagueData.teams).forEach(team => {
+                leagueData.teams[team].stats = {
+                    played: 0,
+                    won: 0,
+                    drawn: 0,
+                    lost: 0,
+                    goalsFor: 0,
+                    goalsAgainst: 0,
+                    points: 0
+                };
+            });
+
+            leagueData.matches.forEach(match => {
+                if (match.homeScore !== null && match.awayScore !== null) {
+                    const homeTeam = leagueData.teams[match.home];
+                    const awayTeam = leagueData.teams[match.away];
+
+                    homeTeam.stats.played++;
+                    awayTeam.stats.played++;
+                    homeTeam.stats.goalsFor += match.homeScore;
+                    homeTeam.stats.goalsAgainst += match.awayScore;
+                    awayTeam.stats.goalsFor += match.awayScore;
+                    awayTeam.stats.goalsAgainst += match.homeScore;
+
+                    if (match.homeScore > match.awayScore) {
+                        homeTeam.stats.won++;
+                        homeTeam.stats.points += 3;
+                        awayTeam.stats.lost++;
+                    } else if (match.homeScore < match.awayScore) {
+                        awayTeam.stats.won++;
+                        awayTeam.stats.points += 3;
+                        homeTeam.stats.lost++;
+                    } else {
+                        homeTeam.stats.drawn++;
+                        awayTeam.stats.drawn++;
+                        homeTeam.stats.points++;
+                        awayTeam.stats.points++;
+                    }
+                }
+            });
+
+            const standings = {};
+            Object.keys(TEAMS).forEach(group => {
+                standings[group] = TEAMS[group].map(team => ({
+                    name: team,
+                    ...leagueData.teams[team].stats,
+                    goalDiff: leagueData.teams[team].stats.goalsFor - leagueData.teams[team].stats.goalsAgainst
+                })).sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
+                    return b.goalsFor - a.goalsFor;
+                });
+            });
+
+            leagueData.standings = standings;
+        }
+
+        // Render functions
+        function renderStandings() {
+            const container = document.getElementById('groupsContainer');
+            const loading = document.getElementById('standingsLoading');
+            
+            container.innerHTML = '';
+            loading.style.display = 'none';
+
+            Object.keys(leagueData.standings).forEach(group => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group';
+                
+                let html = `<h3>${group}</h3>
+                    <table class="standings-table">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>P</th>
+                                <th>W</th>
+                                <th>D</th>
+                                <th>L</th>
+                                <th>GF</th>
+                                <th>GA</th>
+                                <th>GD</th>
+                                <th>Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                leagueData.standings[group].forEach((team, index) => {
+                    const rowClass = index === 0 ? 'qualified' : '';
+                    html += `<tr class="${rowClass}">
+                        <td class="position">${index + 1}</td>
+                        <td class="team-name">${team.name}</td>
+                        <td>${team.played}</td>
+                        <td>${team.won}</td>
+                        <td>${team.drawn}</td>
+                        <td>${team.lost}</td>
+                        <td>${team.goalsFor}</td>
+                        <td>${team.goalsAgainst}</td>
+                        <td>${team.goalDiff > 0 ? '+' : ''}${team.goalDiff}</td>
+                        <td><strong>${team.points}</strong></td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                groupDiv.innerHTML = html;
+                container.appendChild(groupDiv);
+            });
+        }
+
+        function renderFixtures() {
+            const container = document.getElementById('fixturesContainer');
+            const loading = document.getElementById('fixturesLoading');
+            
+            container.innerHTML = '';
+            loading.style.display = 'none';
+
+            const matchesByDate = {};
+            leagueData.matches.forEach(match => {
+                if (match.date) {
+                    const date = new Date(match.date);
+                    const dateKey = date.toDateString();
+                    if (!matchesByDate[dateKey]) {
+                        matchesByDate[dateKey] = [];
+                    }
+                    matchesByDate[dateKey].push(match);
+                }
+            });
+
+            Object.keys(matchesByDate).sort((a, b) => new Date(a) - new Date(b)).forEach(dateKey => {
+                const matchdayDiv = document.createElement('div');
+                matchdayDiv.className = 'matchday';
+
+                const date = new Date(dateKey);
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                
+                let html = `<h3>${date.toLocaleDateString('fr-FR', options)}</h3>`;
+
+                matchesByDate[dateKey].forEach(match => {
+                    const score = match.homeScore !== null ? 
+                        `${match.homeScore} - ${match.awayScore}` : 
+                        'vs';
+                    
+                    html += `<div class="match">
+                        <div class="match-teams">
+                            <span class="team-home">${match.home}</span>
+                            <span class="match-vs">${score}</span>
+                            <span class="team-away">${match.away}</span>
+                        </div>
+                        <span class="match-time">${match.time}</span>
+                    </div>`;
+                });
+
+                matchdayDiv.innerHTML = html;
+                container.appendChild(matchdayDiv);
+            });
+        }
+
+        function renderTeams() {
+            const container = document.getElementById('teamsGrid');
+            const loading = document.getElementById('teamsLoading');
+            
+            container.innerHTML = '';
+            loading.style.display = 'none';
+
+            Object.keys(TEAMS).forEach(group => {
+                TEAMS[group].forEach(teamName => {
+                    const teamDiv = document.createElement('div');
+                    teamDiv.className = 'team-card';
+
+                    let html = `<h3>${teamName}</h3>
+                        <p style="color: var(--text-dim); margin-bottom: 15px;">${group}</p>
+                        <h4>Squad (7 joueurs, 5 jouent)</h4>
+                        <ul class="player-list">`;
+
+                    for (let i = 0; i < 7; i++) {
+                        const player = leagueData.teams[teamName].players[i] || '';
+                        const disabled = !isAdmin ? 'disabled' : '';
+                        html += `<li>
+                            <input type="text" 
+                                   class="player-input" 
+                                   placeholder="Joueur ${i + 1}" 
+                                   value="${player}"
+                                   ${disabled}
+                                   onchange="updatePlayer('${teamName}', ${i}, this.value)">
+                        </li>`;
+                    }
+
+                    html += '</ul>';
+                    teamDiv.innerHTML = html;
+                    container.appendChild(teamDiv);
+                });
+            });
+        }
+
+        function renderAdmin() {
+            if (!isAdmin) {
+                document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('adminNotAuth').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('adminNotAuth').style.display = 'none';
+
+            const container = document.getElementById('adminMatches');
+            container.innerHTML = '';
+
+            leagueData.matches.forEach(match => {
+                if (match.date) {
+                    const matchDiv = document.createElement('div');
+                    matchDiv.className = 'score-match';
+
+                    const date = new Date(match.date);
+                    const dateStr = date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
+                    
+                    matchDiv.innerHTML = `
+                        <label>${dateStr} - ${match.home} vs ${match.away}</label>
+                        <div class="score-inputs">
+                            <input type="number" min="0" value="${match.homeScore ?? 0}" 
+                                   onchange="updateScore(${match.id}, 'home', this.value)">
+                            <span style="color: var(--text-dim);">-</span>
+                            <input type="number" min="0" value="${match.awayScore ?? 0}"
+                                   onchange="updateScore(${match.id}, 'away', this.value)">
+                        </div>
+                    `;
+
+                    container.appendChild(matchDiv);
+                }
+            });
+        }
+
+        // Update functions
+        window.updatePlayer = function(teamName, index, value) {
+            if (!isAdmin) return;
+            leagueData.teams[teamName].players[index] = value;
+        };
+
+        window.updateScore = function(matchId, type, value) {
+            if (!isAdmin) return;
+            const match = leagueData.matches.find(m => m.id === matchId);
+            if (match) {
+                if (type === 'home') {
+                    match.homeScore = parseInt(value) || 0;
+                } else {
+                    match.awayScore = parseInt(value) || 0;
+                }
+            }
+        };
+
+        window.saveAllData = async function() {
+            if (!isAdmin) {
+                alert('❌ Vous devez être connecté en tant qu\'admin');
+                return;
+            }
+
+            try {
+                await set(ref(database, 'league'), leagueData);
+                calculateStandings();
+                renderStandings();
+                renderFixtures();
+                alert('✅ Données sauvegardées avec succès !');
+            } catch (error) {
+                console.error('Erreur de sauvegarde:', error);
+                alert('❌ Erreur lors de la sauvegarde: ' + error.message);
+            }
+        };
+
+        // Load data from Firebase
+        async function loadData() {
+            try {
+                const snapshot = await get(ref(database, 'league'));
+                if (snapshot.exists()) {
+                    leagueData = snapshot.val();
+                    calculateStandings();
+                } else {
+                    initializeTeams();
+                    generateFixtures();
+                    calculateStandings();
+                    await set(ref(database, 'league'), leagueData);
+                }
+                
+                renderStandings();
+                renderFixtures();
+                renderTeams();
+                renderAdmin();
+
+                // Listen for real-time updates
+                onValue(ref(database, 'league'), (snapshot) => {
+                    if (snapshot.exists()) {
+                        leagueData = snapshot.val();
+                        calculateStandings();
+                        renderStandings();
+                        renderFixtures();
+                    }
+                });
+
+            } catch (error) {
+                console.error('Erreur de chargement:', error);
+                showError('Erreur de connexion à la base de données: ' + error.message);
+            }
+        }
+
+        // Navigation
+        window.showSection = function(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+
+            if (sectionId === 'admin') {
+                renderAdmin();
+            }
+        };
+
+        function showError(message) {
+            const error = document.createElement('div');
+            error.className = 'error-message';
+            error.textContent = message;
+            document.querySelector('.container').insertBefore(error, document.querySelector('header'));
+        }
+
+        // Initialize
+        if (database) {
+            loadData();
+        }
+    </script>
+</body>
+</html>
+
+<!-- 
+═══════════════════════════════════════════════════════════════════
+    INSTRUCTIONS DE CONFIGURATION FIREBASE
+═══════════════════════════════════════════════════════════════════
+
+ÉTAPE 1 : Créer un projet Firebase
+------------------------------------
+1. Allez sur https://console.firebase.google.com/
+2. Cliquez sur "Ajouter un projet"
+3. Nommez votre projet (ex: "ramadan-league-2026")
+4. Désactivez Google Analytics (pas nécessaire)
+5. Cliquez sur "Créer le projet"
+
+ÉTAPE 2 : Activer Realtime Database
+------------------------------------
+1. Dans votre projet Firebase, allez dans "Build" → "Realtime Database"
+2. Cliquez sur "Créer une base de données"
+3. Choisissez un emplacement (ex: europe-west1)
+4. Démarrez en mode TEST (vous pourrez sécuriser plus tard)
+5. Cliquez sur "Activer"
+
+ÉTAPE 3 : Obtenir votre configuration
+--------------------------------------
+1. Allez dans Paramètres du projet (⚙️ en haut à gauche)
+2. Faites défiler jusqu'à "Vos applications"
+3. Cliquez sur l'icône Web (</>)
+4. Enregistrez votre application (ex: "Ramadan League Web")
+5. Copiez la configuration firebaseConfig
+
+ÉTAPE 4 : Remplacer la configuration dans ce fichier
+-----------------------------------------------------
+Remplacez les lignes 596-603 avec votre configuration Firebase.
+Exemple de configuration :
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPp",
+    authDomain: "ramadan-league-2026.firebaseapp.com",
+    databaseURL: "https://ramadan-league-2026-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "ramadan-league-2026",
+    storageBucket: "ramadan-league-2026.appspot.com",
+    messagingSenderId: "123456789012",
+    appId: "1:123456789012:web:abcdef1234567890"
+};
+
+ÉTAPE 5 : Configurer les règles de sécurité
+--------------------------------------------
+Dans Realtime Database → Règles, remplacez par :
+
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+
+⚠️ ATTENTION: Ces règles permettent à tout le monde de lire ET écrire.
+Pour une meilleure sécurité, vous pouvez utiliser :
+
+{
+  "rules": {
+    ".read": true,
+    ".write": "auth != null"
+  }
+}
+
+Mais cela nécessite d'implémenter l'authentification Firebase.
+
+ÉTAPE 6 : Héberger votre site
+------------------------------
+Option A - Firebase Hosting (Recommandé) :
+1. Installez Firebase CLI: npm install -g firebase-tools
+2. firebase login
+3. firebase init hosting
+4. firebase deploy
+
+Option B - Autres hébergeurs gratuits :
+- Netlify (netlify.com)
+- Vercel (vercel.com)  
+- GitHub Pages (pages.github.com)
+
+Il suffit d'uploader ce fichier HTML !
+
+ÉTAPE 7 : Changer le mot de passe admin
+----------------------------------------
+Ligne 606 : Changez "ramadan2026" par votre propre mot de passe
+
+AIDE ET SUPPORT
+---------------
+Si vous avez des problèmes :
+1. Vérifiez la console du navigateur (F12) pour les erreurs
+2. Assurez-vous que votre databaseURL correspond exactement à celui dans Firebase
+3. Vérifiez que Realtime Database est bien activé
+4. Assurez-vous que les règles de sécurité permettent la lecture/écriture
+
+FONCTIONNALITÉS
+---------------
+✅ Mise à jour en temps réel pour tous les utilisateurs
+✅ Protection par mot de passe pour les modifications
+✅ Sauvegarde automatique dans le cloud
+✅ Accessible de n'importe où
+✅ Responsive (mobile-friendly)
+
+═══════════════════════════════════════════════════════════════════
+-->
