@@ -621,11 +621,20 @@
             <button class="nav-btn active" onclick="showSection('standings')">Classement</button>
             <button class="nav-btn" onclick="showSection('fixtures')">Calendrier</button>
             <button class="nav-btn" onclick="showSection('teams')">Équipes</button>
+            <button class="nav-btn" onclick="showSection('knockout')">Phase Finale</button>
             <button class="nav-btn" onclick="showSection('admin')">Admin</button>
         </nav>
 
         <div id="standings" class="section active">
             <div class="groups-container" id="groupsContainer"></div>
+            <div style="margin-top: 30px;">
+                <div class="group" style="max-width: 600px; margin: 0 auto;">
+                    <h3 style="color: var(--secondary);">🥈 Meilleur Deuxième</h3>
+                    <div id="bestSecondContainer" style="padding: 20px; text-align: center; font-size: 1.2rem;">
+                        <span style="color: var(--text-dim);">En attente des résultats...</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="fixtures" class="section">
@@ -634,6 +643,45 @@
 
         <div id="teams" class="section">
             <div class="teams-grid" id="teamsGrid"></div>
+        </div>
+
+        <div id="knockout" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                🏆 Phase Finale
+            </h2>
+            <div style="max-width: 900px; margin: 0 auto; display: grid; gap: 30px;">
+                <div class="group">
+                    <h3 style="color: var(--primary);">Demi-Finales</h3>
+                    <div style="display: grid; gap: 15px; margin-top: 20px;">
+                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                            <div style="font-weight: 600; margin-bottom: 10px; color: var(--secondary);">DF1</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span id="sf1-team1">1er Groupe A</span>
+                                <span style="color: var(--text-dim);">vs</span>
+                                <span id="sf1-team2">Meilleur 2e</span>
+                            </div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                            <div style="font-weight: 600; margin-bottom: 10px; color: var(--secondary);">DF2</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span id="sf2-team1">1er Groupe B</span>
+                                <span style="color: var(--text-dim);">vs</span>
+                                <span id="sf2-team2">1er Groupe C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="group">
+                    <h3 style="color: var(--accent);">🏆 Finale</h3>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; font-weight: 600;">
+                            <span id="final-team1">Vainqueur DF1</span>
+                            <span style="color: var(--secondary);">vs</span>
+                            <span id="final-team2">Vainqueur DF2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="admin" class="section">
@@ -688,9 +736,9 @@
         }
 
         const TEAMS = {
-            'Groupe A': ['2BAC SMA','1BAC SM1' ,'TCSF3' ],
-            'Groupe B': ['2BAC SEG', '1BAC SM2',  '1BAC Sexp'],
-            'Groupe C': ['1BAC SEG',  'TCSF2', '2BAC SPC']
+            'Groupe A': ['2BAC SMA', '1BAC SM1', 'TCSF3'],
+            'Groupe B': ['2BAC SEG', '1BAC SM2', '1BAC Sexp'],
+            'Groupe C': ['1BAC SEG', 'TCSF2', '2BAC SPC']
         };
 
         let leagueData = {
@@ -936,6 +984,95 @@
                 groupDiv.innerHTML = html;
                 container.appendChild(groupDiv);
             });
+
+            // Calculate and display best second
+            renderBestSecond();
+            updateKnockoutStage();
+        }
+
+        function renderBestSecond() {
+            const bestSecondContainer = document.getElementById('bestSecondContainer');
+            
+            // Get all second place teams
+            const secondPlaces = [];
+            Object.keys(leagueData.standings).forEach(group => {
+                if (leagueData.standings[group].length >= 2) {
+                    const second = leagueData.standings[group][1];
+                    secondPlaces.push({
+                        ...second,
+                        group: group
+                    });
+                }
+            });
+
+            if (secondPlaces.length === 0) {
+                bestSecondContainer.innerHTML = '<span style="color: var(--text-dim);">En attente des résultats...</span>';
+                return;
+            }
+
+            // Sort by points, then goal difference, then goals scored
+            secondPlaces.sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
+                return b.goalsFor - a.goalsFor;
+            });
+
+            const best = secondPlaces[0];
+            bestSecondContainer.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 15px; text-align: center;">
+                    <div>
+                        <div style="color: var(--text-dim); font-size: 0.8rem;">Équipe</div>
+                        <div style="font-weight: 700; color: var(--primary); font-size: 1.3rem;">${best.name}</div>
+                        <div style="color: var(--text-dim); font-size: 0.9rem;">${best.group}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-dim); font-size: 0.8rem;">Points</div>
+                        <div style="font-weight: 700; color: var(--secondary); font-size: 1.3rem;">${best.points}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-dim); font-size: 0.8rem;">Diff</div>
+                        <div style="font-weight: 700; font-size: 1.3rem;">${best.goalDiff > 0 ? '+' : ''}${best.goalDiff}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-dim); font-size: 0.8rem;">Buts</div>
+                        <div style="font-weight: 700; font-size: 1.3rem;">${best.goalsFor}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateKnockoutStage() {
+            // Update semi-finals with actual team names
+            const groupAWinner = leagueData.standings['Groupe A']?.[0]?.name || '1er Groupe A';
+            const groupBWinner = leagueData.standings['Groupe B']?.[0]?.name || '1er Groupe B';
+            const groupCWinner = leagueData.standings['Groupe C']?.[0]?.name || '1er Groupe C';
+            
+            // Get best second
+            const secondPlaces = [];
+            Object.keys(leagueData.standings).forEach(group => {
+                if (leagueData.standings[group].length >= 2) {
+                    secondPlaces.push(leagueData.standings[group][1]);
+                }
+            });
+            
+            secondPlaces.sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
+                return b.goalsFor - a.goalsFor;
+            });
+
+            const bestSecond = secondPlaces[0]?.name || 'Meilleur 2e';
+
+            // Update DOM
+            const sf1team1 = document.getElementById('sf1-team1');
+            const sf1team2 = document.getElementById('sf1-team2');
+            const sf2team1 = document.getElementById('sf2-team1');
+            const sf2team2 = document.getElementById('sf2-team2');
+
+            if (sf1team1) sf1team1.textContent = groupAWinner;
+            if (sf1team2) sf1team2.textContent = bestSecond;
+            if (sf2team1) sf2team1.textContent = groupBWinner;
+            if (sf2team2) sf2team2.textContent = groupCWinner;
         }
 
         function renderFixtures() {
@@ -1234,5 +1371,3 @@
     </script>
 </body>
 </html>
-
-
