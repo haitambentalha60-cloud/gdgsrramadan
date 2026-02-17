@@ -608,10 +608,10 @@
     <div class="container">
         <header>
             <h1>RAMADAN LEAGUE 2026</h1>
-            <p class="subtitle">GDGSR Football Tournament</p>
+            <p class="subtitle">GJDCSR Football Tournament</p>
             <div class="league-info">
                 <span class="info-badge">📅 18 Fév - 13 Mars</span>
-                <span class="info-badge">⚽ 9 Équipes</span>
+                <span class="info-badge">⚽ 12 Équipes</span>
                 <span class="info-badge">🏆 3 Groupes</span>
                 <span class="info-badge">🔥 Firebase Live</span>
             </div>
@@ -644,6 +644,7 @@
                     <input type="password" id="adminPassword" placeholder="Mot de passe admin">
                     <button class="update-btn" onclick="loginAdmin()">Se connecter</button>
                     <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-dim);">
+                        Mot de passe par défaut: <strong>ramadan2026</strong>
                     </p>
                 </div>
                 <div id="adminPanel" style="display: none;">
@@ -673,7 +674,6 @@
             measurementId: "G-BE6D61PBDN"
         };
 
-        // Initialize Firebase - FIXED: using let instead of const
         let app, database, analytics;
         let isAdmin = false;
         const ADMIN_PASSWORD = "ramadan2026";
@@ -689,9 +689,9 @@
         }
 
         const TEAMS = {
-            'Groupe A': ['2BAC SMA', 'TCSF3','1 BAC SM2'],
-            'Groupe B': ['2BAC SEG', , '1BAC SM1', '1BAC SEG'],
-            'Groupe C': ['TCSF2', '1BAC Sexp' , '2BAC SPC']
+            'Groupe A': ['2BAC SM2', '2BAC SPC3', '2BAC SPC2', '2BAC SPC1'],
+            'Groupe B': ['2BAC SEG', '1BAC SM2', '1BAC SM1', '1BAC Scup'],
+            'Groupe C': ['1BAC SEG', 'TCSF3', 'TCSF2', 'TCSF1']
         };
 
         let leagueData = {
@@ -701,10 +701,42 @@
             initialized: false
         };
 
-        // FIXED: Safe number conversion to prevent NaN
         function safeNumber(value, defaultValue = 0) {
             const num = parseInt(value);
             return isNaN(num) ? defaultValue : num;
+        }
+
+        // FIXED: Ensure all teams exist before processing
+        function ensureTeamsExist() {
+            Object.keys(TEAMS).forEach(group => {
+                TEAMS[group].forEach(teamName => {
+                    if (!leagueData.teams[teamName]) {
+                        leagueData.teams[teamName] = {
+                            group: group,
+                            players: Array(7).fill(''),
+                            stats: {
+                                played: 0,
+                                won: 0,
+                                drawn: 0,
+                                lost: 0,
+                                goalsFor: 0,
+                                goalsAgainst: 0,
+                                points: 0
+                            }
+                        };
+                    } else if (!leagueData.teams[teamName].stats) {
+                        leagueData.teams[teamName].stats = {
+                            played: 0,
+                            won: 0,
+                            drawn: 0,
+                            lost: 0,
+                            goalsFor: 0,
+                            goalsAgainst: 0,
+                            points: 0
+                        };
+                    }
+                });
+            });
         }
 
         function initializeTeams() {
@@ -781,6 +813,11 @@
         }
 
         function calculateStandings() {
+            console.log("🔄 Calcul des classements...");
+            
+            // FIXED: Ensure all teams exist first
+            ensureTeamsExist();
+
             // Reset all stats
             Object.keys(leagueData.teams).forEach(team => {
                 leagueData.teams[team].stats = {
@@ -794,9 +831,19 @@
                 };
             });
 
-            // Process matches - FIXED: Using safeNumber to prevent NaN
-            leagueData.matches.forEach(match => {
+            // Process matches with safety checks
+            leagueData.matches.forEach((match, index) => {
                 if (match.homeScore !== null && match.awayScore !== null) {
+                    // FIXED: Check if teams exist before accessing
+                    if (!leagueData.teams[match.home]) {
+                        console.error(`❌ Équipe introuvable: ${match.home}`);
+                        return;
+                    }
+                    if (!leagueData.teams[match.away]) {
+                        console.error(`❌ Équipe introuvable: ${match.away}`);
+                        return;
+                    }
+
                     const homeTeam = leagueData.teams[match.home];
                     const awayTeam = leagueData.teams[match.away];
 
@@ -841,6 +888,7 @@
             });
 
             leagueData.standings = standings;
+            console.log("✅ Classements calculés");
         }
 
         function renderStandings() {
@@ -947,11 +995,11 @@
 
                     let html = `<h3>${teamName}</h3>
                         <p style="color: var(--text-dim); margin-bottom: 15px;">${group}</p>
-                        <h4>Effectif (7 joueurs, 6 jouent)</h4>
+                        <h4>Effectif (7 joueurs, 5 jouent)</h4>
                         <ul class="player-list">`;
 
                     for (let i = 0; i < 7; i++) {
-                        const player = leagueData.teams[teamName].players[i] || '';
+                        const player = leagueData.teams[teamName]?.players[i] || '';
                         const disabled = !isAdmin ? 'disabled' : '';
                         html += `<li>
                             <input type="text" 
@@ -1000,19 +1048,19 @@
             });
         }
 
-        // Update functions
         window.updatePlayer = async function(teamName, index, value) {
             if (!isAdmin) return;
-            leagueData.teams[teamName].players[index] = value;
-            await saveToDatabase();
-            showAlert('Joueur mis à jour!', 'success');
+            if (leagueData.teams[teamName]) {
+                leagueData.teams[teamName].players[index] = value;
+                await saveToDatabase();
+                showAlert('Joueur mis à jour!', 'success');
+            }
         };
 
         window.updateScore = function(matchId, type, value) {
             if (!isAdmin) return;
             const match = leagueData.matches.find(m => m.id === matchId);
             if (match) {
-                // FIXED: Using safeNumber to ensure valid numbers
                 if (type === 'home') {
                     match.homeScore = safeNumber(value, 0);
                 } else {
@@ -1024,9 +1072,12 @@
         async function saveToDatabase() {
             try {
                 showLoading(true);
+                
+                // Ensure teams exist before saving
+                ensureTeamsExist();
+                
                 const dbRef = ref(database, 'league');
                 
-                // FIXED: Clean data before saving to prevent NaN
                 const cleanData = JSON.parse(JSON.stringify(leagueData, (key, value) => {
                     if (typeof value === 'number' && isNaN(value)) {
                         return 0;
@@ -1052,7 +1103,10 @@
                 
                 if (snapshot.exists()) {
                     leagueData = snapshot.val();
+                    // Ensure all teams have proper structure
+                    ensureTeamsExist();
                     console.log("✅ Données chargées depuis Firebase");
+                    showLoading(false);
                     return true;
                 }
                 showLoading(false);
@@ -1070,11 +1124,17 @@
                 return;
             }
 
-            calculateStandings();
-            await saveToDatabase();
-            renderStandings();
-            renderFixtures();
-            showAlert('✅ Toutes les modifications ont été sauvegardées!', 'success');
+            try {
+                console.log("💾 Sauvegarde en cours...");
+                calculateStandings();
+                await saveToDatabase();
+                renderStandings();
+                renderFixtures();
+                showAlert('✅ Modifications sauvegardées!', 'success');
+            } catch (error) {
+                console.error("❌ Erreur:", error);
+                showAlert('❌ Erreur: ' + error.message, 'error');
+            }
         };
 
         window.loginAdmin = function() {
@@ -1134,11 +1194,16 @@
             const loaded = await loadFromDatabase();
             
             if (!loaded || !leagueData.initialized) {
+                console.log("🔧 Initialisation des données...");
                 initializeTeams();
                 generateFixtures();
                 calculateStandings();
                 leagueData.initialized = true;
                 await saveToDatabase();
+            } else {
+                // Ensure teams structure is complete even when loading
+                ensureTeamsExist();
+                calculateStandings();
             }
             
             renderStandings();
@@ -1152,6 +1217,8 @@
             onValue(dbRef, (snapshot) => {
                 if (snapshot.exists() && !isAdmin) {
                     leagueData = snapshot.val();
+                    ensureTeamsExist();
+                    calculateStandings();
                     renderStandings();
                     renderFixtures();
                     renderTeams();
