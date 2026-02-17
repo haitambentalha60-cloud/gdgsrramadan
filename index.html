@@ -821,7 +821,6 @@
                     <input type="password" id="adminPassword" placeholder="Mot de passe admin">
                     <button class="update-btn" onclick="loginAdmin()">Se connecter</button>
                     <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-dim);">
-                        Mot de passe par défaut: <strong>ramadan2026</strong>
                     </p>
                 </div>
                 <div id="adminPanel" style="display: none;">
@@ -835,7 +834,14 @@
                         <div class="news-form">
                             <input type="text" id="newsTitle" placeholder="Titre de l'actualité">
                             <textarea id="newsContent" placeholder="Contenu de l'actualité..."></textarea>
-                            <input type="text" id="newsImageUrl" placeholder="URL de l'image (optionnel)">
+                            <div style="margin: 10px 0;">
+                                <label style="display: block; color: var(--text-dim); margin-bottom: 5px;">📷 Ajouter une image (optionnel)</label>
+                                <input type="file" id="newsImageFile" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" 
+                                       style="width: 100%; padding: 12px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text); cursor: pointer;">
+                                <div id="imagePreview" style="margin-top: 10px; display: none;">
+                                    <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 10px; border: 2px solid var(--primary);">
+                                </div>
+                            </div>
                             <select id="newsCategory">
                                 <option value="info">📢 Information</option>
                                 <option value="match">⚽ Match</option>
@@ -875,7 +881,7 @@
 
         let app, database, analytics;
         let isAdmin = false;
-        const ADMIN_PASSWORD = "ramadan2026";
+        const ADMIN_PASSWORD = "thegoat2008";
 
         try {
             app = initializeApp(firebaseConfig);
@@ -1285,6 +1291,7 @@
                             <div class="news-badge">${categoryIcons[news.category] || '📢'} ${categoryLabels[news.category] || 'Info'}</div>
                         </div>
                         <h3 class="news-title">${news.title}</h3>
+                        ${news.imageData ? `<img src="${news.imageData}" alt="${news.title}" class="news-image">` : ''}
                         ${news.imageUrl ? `<img src="${news.imageUrl}" alt="${news.title}" class="news-image" onerror="this.style.display='none'">` : ''}
                         <div class="news-content">${news.content}</div>
                         ${isAdmin ? `<button class="delete-news-btn" onclick="deleteNews(${news.id})" style="margin-top: 15px;">🗑️ Supprimer</button>` : ''}
@@ -1301,7 +1308,7 @@
 
             const title = document.getElementById('newsTitle').value.trim();
             const content = document.getElementById('newsContent').value.trim();
-            const imageUrl = document.getElementById('newsImageUrl').value.trim();
+            const imageFile = document.getElementById('newsImageFile').files[0];
             const category = document.getElementById('newsCategory').value;
 
             if (!title || !content) {
@@ -1309,11 +1316,33 @@
                 return;
             }
 
+            // Convert image to base64 if present
+            let imageData = null;
+            if (imageFile) {
+                // Check file size (limit to 1MB for performance)
+                if (imageFile.size > 1024 * 1024) {
+                    showAlert('⚠️ L\'image est trop grande (max 1MB)', 'error');
+                    return;
+                }
+
+                try {
+                    imageData = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(imageFile);
+                    });
+                } catch (error) {
+                    showAlert('❌ Erreur lors du chargement de l\'image', 'error');
+                    return;
+                }
+            }
+
             const newsItem = {
                 id: Date.now(),
                 title: title,
                 content: content,
-                imageUrl: imageUrl || null,
+                imageData: imageData,
                 category: category,
                 timestamp: Date.now()
             };
@@ -1330,8 +1359,9 @@
             // Clear form
             document.getElementById('newsTitle').value = '';
             document.getElementById('newsContent').value = '';
-            document.getElementById('newsImageUrl').value = '';
+            document.getElementById('newsImageFile').value = '';
             document.getElementById('newsCategory').value = 'info';
+            document.getElementById('imagePreview').style.display = 'none';
 
             showAlert('✅ Actualité publiée avec succès!', 'success');
         };
@@ -1668,6 +1698,26 @@
         }
 
         window.addEventListener('DOMContentLoaded', init);
+
+        // Image preview handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.getElementById('newsImageFile');
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const preview = document.getElementById('imagePreview');
+                            const previewImg = document.getElementById('previewImg');
+                            previewImg.src = event.target.result;
+                            preview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
