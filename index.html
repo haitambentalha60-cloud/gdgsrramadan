@@ -1035,10 +1035,10 @@
                     matchDiv.innerHTML = `
                         <label>${dateStr} - ${match.home} vs ${match.away}</label>
                         <div class="score-inputs">
-                            <input type="number" min="0" value="${match.homeScore ?? 0}" 
+                            <input type="number" min="0" value="${match.homeScore !== null ? match.homeScore : ''}" 
                                    onchange="window.updateScore(${match.id}, 'home', this.value)">
                             <span style="color: var(--text-dim);">-</span>
-                            <input type="number" min="0" value="${match.awayScore ?? 0}"
+                            <input type="number" min="0" value="${match.awayScore !== null ? match.awayScore : ''}"
                                    onchange="window.updateScore(${match.id}, 'away', this.value)">
                         </div>
                     `;
@@ -1061,10 +1061,14 @@
             if (!isAdmin) return;
             const match = leagueData.matches.find(m => m.id === matchId);
             if (match) {
+                // If value is empty string, set to null (match not played)
+                // Otherwise convert to number
+                const scoreValue = value === '' || value === null || value === undefined ? null : safeNumber(value, 0);
+                
                 if (type === 'home') {
-                    match.homeScore = safeNumber(value, 0);
+                    match.homeScore = scoreValue;
                 } else {
-                    match.awayScore = safeNumber(value, 0);
+                    match.awayScore = scoreValue;
                 }
             }
         };
