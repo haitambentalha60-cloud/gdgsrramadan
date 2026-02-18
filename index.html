@@ -1345,6 +1345,10 @@
                                     </select>
                                 </div>
                                 <div>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Arbitre</label>
+                                    <input type="text" id="newMatchReferee" placeholder="Nom de l'arbitre" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                                </div>
+                                <div>
                                     <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Date</label>
                                     <input type="date" id="newMatchDate" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
                                 </div>
@@ -1428,6 +1432,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+        import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDAGuFQg0ofptIPk2MBvwBQQYtZUDdX8Dk",
@@ -1440,7 +1445,7 @@
             measurementId: "G-BE6D61PBDN"
         };
 
-        let app, database, analytics;
+        let app, database, analytics, messaging;
         let isAdmin = false;
         const ADMIN_PASSWORD = "thegoat2008";
 
@@ -1448,6 +1453,13 @@
             app = initializeApp(firebaseConfig);
             analytics = getAnalytics(app);
             database = getDatabase(app);
+            
+            // Initialize Firebase Cloud Messaging
+            if ('Notification' in window && 'serviceWorker' in navigator) {
+                messaging = getMessaging(app);
+                console.log("✅ Firebase Messaging initialisé");
+            }
+            
             console.log("✅ Firebase initialisé avec succès");
         } catch (error) {
             console.error("❌ Erreur Firebase:", error);
@@ -1484,7 +1496,147 @@
             return visitorId;
         }
 
-        // NOTIFICATION SYSTEM
+        // PUSH NOTIFICATIONS SYSTEM
+        let userNotificationToken = null;
+
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('Ce navigateur ne supporte pas les notifications');
+                return false;
+            }
+
+            if (!messaging) {
+                console.log('Firebase Messaging non initialisé');
+                return false;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    console.log('✅ Permission de notification accordée');
+                    
+                    // Get FCM token
+                    const token = await getToken(messaging, {
+                        vapidKey: 'BCEVc8GGEEtzi8FkKYwU0aXT59Zk0msr7rnsrgsNJR0wWW_-IwIAtD3eaUYXYUMRyjBeDym8Jghq8_xK-Jls2SI' // Vous devrez ajouter votre clé VAPID depuis Firebase Console
+                    });
+                    
+                    if (token) {
+                        console.log('📱 Token FCM:', token);
+                        userNotificationToken = token;
+                        
+                        // Save token to database
+                        const visitorId = getVisitorId();
+                        const tokensRef = ref(database, `notification_tokens/${visitorId}`);
+                        await set(tokensRef, {
+                            token: token,
+                            timestamp: Date.now()
+                        });
+                        
+                        showAlert('✅ Notifications activées !', 'success');
+                        return true;
+                    }
+                } else {
+                    console.log('❌ Permission de notification refusée');
+                    showAlert('⚠️ Veuillez activer les notifications pour recevoir les alertes en temps réel', 'error');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Erreur lors de la demande de permission:', error);
+                return false;
+            }
+        }
+
+        // Listen for foreground messages
+        if (messaging) {
+            onMessage(messaging, (payload) => {
+                console.log('📬 Message reçu:', payload);
+                
+                const notificationData = payload.data || payload.notification;
+                
+                // Show in-app notification
+                showNotification({
+                    id: Date.now(),
+                    type: notificationData.type || 'custom',
+                    title: notificationData.title,
+                    message: notificationData.body || notificationData.message,
+                    timestamp: Date.now(),
+                    ...notificationData
+                });
+                
+                // Show browser notification
+                if (Notification.permission === 'granted') {
+                    new Notification(notificationData.title, {
+                        body: notificationData.body || notificationData.message,
+                        icon: '/path/to/icon.png', // Ajoutez votre icône
+                        badge: '/path/to/badge.png',
+                        tag: 'ramadan-league',
+                        requireInteraction: true
+                    });
+                }
+            });
+        }
+
+        // Show notification permission banner
+        function showNotificationBanner() {
+            if (!('Notification' in window)) return;
+            
+            if (Notification.permission === 'default') {
+                const banner = document.createElement('div');
+                banner.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: var(--bg-light);
+                    border: 2px solid var(--primary);
+                    border-radius: 15px;
+                    padding: 20px 30px;
+                    z-index: 1500;
+                    max-width: 500px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                    animation: slideInUp 0.5s ease-out;
+                `;
+                
+                banner.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="font-size: 2rem;">🔔</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; margin-bottom: 5px; color: var(--text);">
+                                Activer les notifications
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--text-dim);">
+                                Recevez des alertes pour les buts, débuts et fins de matchs
+                            </div>
+                        </div>
+                        <button onclick="acceptNotifications(this)" class="update-btn" style="margin: 0; white-space: nowrap;">
+                            Activer
+                        </button>
+                        <button onclick="this.closest('div').remove()" style="background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.5rem;">
+                            ×
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(banner);
+            }
+        }
+
+        window.acceptNotifications = async function(button) {
+            button.textContent = 'Chargement...';
+            button.disabled = true;
+            
+            const granted = await requestNotificationPermission();
+            
+            if (granted) {
+                button.closest('div').remove();
+            } else {
+                button.textContent = 'Activer';
+                button.disabled = false;
+            }
+        };
+
+        // NOTIFICATION SYSTEM (updated to trigger push notifications)
         function showNotification(notification) {
             const container = document.getElementById('notificationsContainer');
             const notifDiv = document.createElement('div');
@@ -1540,7 +1692,7 @@
                 closeNotification(notification.id);
             }, 10000);
 
-            // Play sound (optional)
+            // Play sound
             playNotificationSound(notification.type);
         }
 
@@ -1553,7 +1705,6 @@
         }
 
         function playNotificationSound(type) {
-            // Create audio context for notification sound
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -1821,7 +1972,8 @@
                             awayScore: null,
                             date: null,
                             matchType: 'Aller',
-                            stage: 'group'
+                            stage: 'group',
+                            referee: ''
                         });
                         // Match Retour
                         fixtures.push({
@@ -1833,7 +1985,8 @@
                             awayScore: null,
                             date: null,
                             matchType: 'Retour',
-                            stage: 'group'
+                            stage: 'group',
+                            referee: ''
                         });
                     }
                 }
@@ -2236,12 +2389,15 @@
                 const timeStr = match.time ? match.time.split('-')[0].trim() : '12:00';
 
                 matchDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 10px;">
                         <div style="flex: 1; min-width: 200px;">
                             <strong style="color: var(--secondary);">${match.home}</strong> vs <strong style="color: var(--accent);">${match.away}</strong>
                             <div style="color: var(--text-dim); font-size: 0.9rem; margin-top: 5px;">${match.group} - ${match.matchType || 'Aller'}</div>
+                            ${match.referee ? `<div style="color: var(--text-dim); font-size: 0.85rem; margin-top: 3px;">👨‍⚖️ Arbitre: ${match.referee}</div>` : ''}
                         </div>
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="matchReferee${index}" value="${match.referee || ''}" placeholder="Arbitre"
+                                   style="padding: 8px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text); width: 150px;">
                             <input type="date" id="matchDate${index}" value="${dateStr}" 
                                    style="padding: 8px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
                             <input type="time" id="matchTime${index}" value="${timeStr}" 
@@ -2285,6 +2441,7 @@
             const home = document.getElementById('newMatchHome').value;
             const away = document.getElementById('newMatchAway').value;
             const matchType = document.getElementById('newMatchType').value;
+            const referee = document.getElementById('newMatchReferee').value.trim();
             const date = document.getElementById('newMatchDate').value;
             const time = document.getElementById('newMatchTime').value;
 
@@ -2304,6 +2461,7 @@
                 home: home,
                 away: away,
                 matchType: matchType,
+                referee: referee,
                 homeScore: null,
                 awayScore: null,
                 date: new Date(date + 'T' + time).toISOString(),
@@ -2319,6 +2477,7 @@
 
             document.getElementById('newMatchDate').value = '';
             document.getElementById('newMatchTime').value = '12:00';
+            document.getElementById('newMatchReferee').value = '';
 
             showAlert('✅ Match ajouté avec succès!', 'success');
         };
@@ -2357,6 +2516,7 @@
             leagueData.matches.forEach((match, index) => {
                 const dateInput = document.getElementById(`matchDate${index}`);
                 const timeInput = document.getElementById(`matchTime${index}`);
+                const refereeInput = document.getElementById(`matchReferee${index}`);
 
                 if (dateInput && timeInput) {
                     const dateValue = dateInput.value;
@@ -2366,6 +2526,10 @@
                         match.date = new Date(dateValue + 'T' + timeValue).toISOString();
                         match.time = timeValue;
                     }
+                }
+
+                if (refereeInput) {
+                    match.referee = refereeInput.value.trim();
                 }
             });
 
@@ -2452,6 +2616,11 @@
                     <p style="color: var(--text-dim); font-size: 1.1rem;">
                         ${match.group} - ${match.matchType || 'Match'} - ${dateStr}
                     </p>
+                    ${match.referee ? `
+                        <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 5px;">
+                            👨‍⚖️ Arbitre: <strong style="color: var(--text);">${match.referee}</strong>
+                        </p>
+                    ` : ''}
                     ${isFinished ? `
                         <div style="font-size: 3rem; font-weight: 700; margin: 20px 0; color: var(--secondary);">
                             ${match.homeScore} - ${match.awayScore}
@@ -3112,6 +3281,11 @@
             renderNews();
             renderVotingSection();
             checkForNewNotifications();
+            
+            // Show notification permission banner after 3 seconds
+            setTimeout(() => {
+                showNotificationBanner();
+            }, 3000);
             
             showLoading(false);
 
