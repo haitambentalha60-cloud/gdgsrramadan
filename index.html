@@ -803,6 +803,184 @@
             margin-left: 10px;
         }
 
+        /* NOTIFICATION SYSTEM STYLES */
+        .notifications-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+        }
+
+        .notification {
+            background: var(--bg-light);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: slideInNotification 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+
+        .notification.goal {
+            border-color: var(--secondary);
+        }
+
+        .notification.goal::before {
+            background: var(--secondary);
+        }
+
+        .notification.match-start {
+            border-color: var(--primary);
+        }
+
+        .notification.match-end {
+            border-color: var(--accent);
+        }
+
+        .notification.match-end::before {
+            background: var(--accent);
+        }
+
+        @keyframes slideInNotification {
+            from {
+                transform: translateX(450px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutNotification {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(450px);
+                opacity: 0;
+            }
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .notification-icon {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+
+        .notification-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification-time {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .notification-body {
+            font-size: 1rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .notification-match {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .notification-score {
+            font-size: 1.8rem;
+            color: var(--secondary);
+            margin: 10px 0;
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .notification-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Admin Notification Controls */
+        .admin-notification-panel {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .notification-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .notification-form select,
+        .notification-form input,
+        .notification-form textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 184, 148, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .notification-preview {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px dashed var(--primary);
+            margin-top: 15px;
+        }
+
         /* VOTING SECTION STYLES */
         .voting-section {
             background: var(--bg-light);
@@ -984,6 +1162,9 @@
 <body>
     <div class="bg-animation"></div>
     
+    <!-- Notifications Container -->
+    <div class="notifications-container" id="notificationsContainer"></div>
+    
     <div class="loading" id="loadingIndicator">
         <div class="loading-spinner"></div>
         <div style="text-align: center; color: var(--text-dim);">Chargement...</div>
@@ -1044,8 +1225,8 @@
         <div id="votes" class="section">
             <div class="voting-section">
                 <div class="voting-header">
-                    <h3>🏆 Votez pour vos Joueurs Préférés</h3>
-                    <p style="color: var(--text-dim); margin-top: 10px;">Votez pour les meilleurs joueurs du tournoi dans différentes catégories</p>
+                    <h3>🏆 Votez pour le Meilleur Joueur du Tournoi</h3>
+                    <p style="color: var(--text-dim); margin-top: 10px;">Votez pour le meilleur joueur du tournoi Ramadan League 2026</p>
                 </div>
 
                 <!-- Meilleur Joueur du Tournoi -->
@@ -1054,22 +1235,6 @@
                     <div class="vote-options" id="votePlayerTournament"></div>
                     <button class="update-btn" onclick="submitTournamentVote()" id="btnVoteTournament">Voter</button>
                     <div class="vote-results" id="resultsTournament" style="margin-top: 20px;"></div>
-                </div>
-
-                <!-- Meilleur Buteur -->
-                <div class="vote-category">
-                    <h4>⚽ Meilleur Buteur</h4>
-                    <div class="vote-options" id="voteTopScorer"></div>
-                    <button class="update-btn" onclick="submitScorerVote()" id="btnVoteScorer">Voter</button>
-                    <div class="vote-results" id="resultsScorer" style="margin-top: 20px;"></div>
-                </div>
-
-                <!-- Meilleur Gardien -->
-                <div class="vote-category">
-                    <h4>🧤 Meilleur Gardien</h4>
-                    <div class="vote-options" id="voteTopKeeper"></div>
-                    <button class="update-btn" onclick="submitKeeperVote()" id="btnVoteKeeper">Voter</button>
-                    <div class="vote-results" id="resultsKeeper" style="margin-top: 20px;"></div>
                 </div>
             </div>
         </div>
@@ -1206,6 +1371,46 @@
                         <h3>💬 Gérer les Commentaires</h3>
                         <div id="adminCommentsContainer" style="max-height: 400px; overflow-y: auto;"></div>
                     </div>
+
+                    <!-- Notifications Management Section -->
+                    <div class="admin-controls">
+                        <h3>🔔 Envoyer une Notification</h3>
+                        <div class="admin-notification-panel">
+                            <div class="notification-form">
+                                <div>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px;">Type de notification</label>
+                                    <select id="notificationType" onchange="updateNotificationForm()">
+                                        <option value="goal">⚽ But marqué</option>
+                                        <option value="match-start">🟢 Début de match</option>
+                                        <option value="match-end">🔴 Fin de match</option>
+                                        <option value="custom">📢 Notification personnalisée</option>
+                                    </select>
+                                </div>
+                                <div id="notificationMatchSelect">
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px;">Sélectionner un match</label>
+                                    <select id="notificationMatch"></select>
+                                </div>
+                                <div id="notificationGoalFields" style="display: none;">
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px;">Équipe qui a marqué</label>
+                                    <select id="notificationTeam">
+                                        <option value="home">Équipe Domicile</option>
+                                        <option value="away">Équipe Extérieur</option>
+                                    </select>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; margin-top: 10px;">Joueur (optionnel)</label>
+                                    <input type="text" id="notificationPlayer" placeholder="Nom du joueur">
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; margin-top: 10px;">Minute</label>
+                                    <input type="number" id="notificationMinute" placeholder="45" min="1" max="120">
+                                </div>
+                                <div id="notificationCustomFields" style="display: none;">
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px;">Titre de la notification</label>
+                                    <input type="text" id="notificationCustomTitle" placeholder="Titre">
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; margin-top: 10px;">Message</label>
+                                    <textarea id="notificationCustomMessage" placeholder="Votre message..." rows="3"></textarea>
+                                </div>
+                                <button class="update-btn" onclick="sendNotification()">🔔 Envoyer la notification</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1263,10 +1468,9 @@
             comments: {},
             votes: {
                 tournament: {},
-                scorer: {},
-                keeper: {},
                 matches: {}
             },
+            notifications: [],
             initialized: false
         };
 
@@ -1278,6 +1482,260 @@
                 localStorage.setItem('visitorId', visitorId);
             }
             return visitorId;
+        }
+
+        // NOTIFICATION SYSTEM
+        function showNotification(notification) {
+            const container = document.getElementById('notificationsContainer');
+            const notifDiv = document.createElement('div');
+            notifDiv.className = `notification ${notification.type}`;
+            notifDiv.id = `notification-${notification.id}`;
+
+            let icon = '🔔';
+            let title = notification.title;
+            let body = notification.message;
+
+            if (notification.type === 'goal') {
+                icon = '⚽';
+                title = `BUT ! ${notification.team}`;
+                body = notification.player ? 
+                    `${notification.player} marque à la ${notification.minute}' !` : 
+                    `But marqué à la ${notification.minute}' !`;
+                if (notification.score) {
+                    body += `\n${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
+                }
+            } else if (notification.type === 'match-start') {
+                icon = '🟢';
+                title = 'Match en cours !';
+                body = `${notification.homeTeam} vs ${notification.awayTeam}`;
+            } else if (notification.type === 'match-end') {
+                icon = '🔴';
+                title = 'Match terminé !';
+                body = `${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
+            }
+
+            const time = new Date(notification.timestamp).toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            notifDiv.innerHTML = `
+                <button class="notification-close" onclick="closeNotification('${notification.id}')">×</button>
+                <div class="notification-header">
+                    <div class="notification-title">
+                        <span class="notification-icon">${icon}</span>
+                        ${title}
+                    </div>
+                </div>
+                <div class="notification-body">
+                    ${body}
+                </div>
+                <div class="notification-time">${time}</div>
+            `;
+
+            container.appendChild(notifDiv);
+
+            // Auto remove after 10 seconds
+            setTimeout(() => {
+                closeNotification(notification.id);
+            }, 10000);
+
+            // Play sound (optional)
+            playNotificationSound(notification.type);
+        }
+
+        function closeNotification(notificationId) {
+            const notif = document.getElementById(`notification-${notificationId}`);
+            if (notif) {
+                notif.style.animation = 'slideOutNotification 0.3s ease-out';
+                setTimeout(() => notif.remove(), 300);
+            }
+        }
+
+        function playNotificationSound(type) {
+            // Create audio context for notification sound
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'goal') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.value = 0.3;
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 200);
+            } else {
+                oscillator.frequency.value = 600;
+                gainNode.gain.value = 0.2;
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 150);
+            }
+        }
+
+        // Admin notification functions
+        window.updateNotificationForm = function() {
+            const type = document.getElementById('notificationType').value;
+            const goalFields = document.getElementById('notificationGoalFields');
+            const customFields = document.getElementById('notificationCustomFields');
+            const matchSelect = document.getElementById('notificationMatchSelect');
+
+            goalFields.style.display = 'none';
+            customFields.style.display = 'none';
+            matchSelect.style.display = 'block';
+
+            if (type === 'goal') {
+                goalFields.style.display = 'block';
+            } else if (type === 'custom') {
+                customFields.style.display = 'block';
+                matchSelect.style.display = 'none';
+            }
+
+            updateNotificationMatchSelect();
+        };
+
+        function updateNotificationMatchSelect() {
+            const select = document.getElementById('notificationMatch');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Sélectionner un match</option>';
+            
+            // Get today's matches or upcoming matches
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            leagueData.matches
+                .filter(m => {
+                    const matchDate = new Date(m.date);
+                    matchDate.setHours(0, 0, 0, 0);
+                    return matchDate >= today;
+                })
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .slice(0, 10)
+                .forEach(match => {
+                    const option = document.createElement('option');
+                    option.value = match.id;
+                    const date = new Date(match.date).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    option.textContent = `${match.home} vs ${match.away} (${date})`;
+                    select.appendChild(option);
+                });
+        }
+
+        window.sendNotification = async function() {
+            if (!isAdmin) {
+                showAlert('Vous devez être connecté en tant qu\'admin!', 'error');
+                return;
+            }
+
+            const type = document.getElementById('notificationType').value;
+            const matchId = document.getElementById('notificationMatch').value;
+
+            let notification = {
+                id: Date.now(),
+                timestamp: Date.now(),
+                type: type
+            };
+
+            if (type === 'custom') {
+                const title = document.getElementById('notificationCustomTitle').value.trim();
+                const message = document.getElementById('notificationCustomMessage').value.trim();
+                
+                if (!title || !message) {
+                    showAlert('⚠️ Veuillez remplir tous les champs!', 'error');
+                    return;
+                }
+
+                notification.title = title;
+                notification.message = message;
+            } else {
+                if (!matchId) {
+                    showAlert('⚠️ Veuillez sélectionner un match!', 'error');
+                    return;
+                }
+
+                const match = leagueData.matches.find(m => m.id == matchId);
+                if (!match) {
+                    showAlert('❌ Match introuvable!', 'error');
+                    return;
+                }
+
+                notification.matchId = matchId;
+                notification.homeTeam = match.home;
+                notification.awayTeam = match.away;
+
+                if (type === 'goal') {
+                    const team = document.getElementById('notificationTeam').value;
+                    const player = document.getElementById('notificationPlayer').value.trim();
+                    const minute = document.getElementById('notificationMinute').value;
+
+                    if (!minute) {
+                        showAlert('⚠️ Veuillez indiquer la minute!', 'error');
+                        return;
+                    }
+
+                    notification.team = team === 'home' ? match.home : match.away;
+                    notification.player = player;
+                    notification.minute = minute;
+                    notification.score = {
+                        home: match.homeScore || 0,
+                        away: match.awayScore || 0
+                    };
+                } else if (type === 'match-end') {
+                    if (match.homeScore === null || match.awayScore === null) {
+                        showAlert('⚠️ Le score du match doit être renseigné!', 'error');
+                        return;
+                    }
+                    notification.score = {
+                        home: match.homeScore,
+                        away: match.awayScore
+                    };
+                }
+            }
+
+            // Save notification to database
+            if (!leagueData.notifications) {
+                leagueData.notifications = [];
+            }
+            leagueData.notifications.push(notification);
+
+            await saveToDatabase();
+
+            // Show notification immediately for admin
+            showNotification(notification);
+
+            // Clear form
+            document.getElementById('notificationType').value = 'goal';
+            document.getElementById('notificationMatch').value = '';
+            document.getElementById('notificationPlayer').value = '';
+            document.getElementById('notificationMinute').value = '';
+            document.getElementById('notificationCustomTitle').value = '';
+            document.getElementById('notificationCustomMessage').value = '';
+            updateNotificationForm();
+
+            showAlert('✅ Notification envoyée!', 'success');
+        };
+
+        // Check for new notifications
+        let lastNotificationCheck = Date.now();
+
+        function checkForNewNotifications() {
+            if (!leagueData.notifications) return;
+
+            leagueData.notifications
+                .filter(n => n.timestamp > lastNotificationCheck)
+                .forEach(notification => {
+                    showNotification(notification);
+                });
+
+            if (leagueData.notifications.length > 0) {
+                lastNotificationCheck = Math.max(...leagueData.notifications.map(n => n.timestamp));
+            }
         }
 
         function safeNumber(value, defaultValue = 0) {
@@ -2283,8 +2741,6 @@
         // Tournament-wide voting
         function renderVotingSection() {
             renderTournamentPlayerVoting();
-            renderScorerVoting();
-            renderKeeperVoting();
         }
 
         function renderTournamentPlayerVoting() {
@@ -2292,7 +2748,7 @@
             const resultsContainer = document.getElementById('resultsTournament');
             
             if (!leagueData.votes) {
-                leagueData.votes = { tournament: {}, scorer: {}, keeper: {}, matches: {} };
+                leagueData.votes = { tournament: {}, matches: {} };
             }
 
             const visitorId = getVisitorId();
@@ -2334,20 +2790,25 @@
             const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
             
             let resultsHtml = '<h4 style="color: var(--primary); margin-bottom: 15px;">🏆 Top 5</h4>';
-            sortedVotes.forEach(([playerKey, votes], idx) => {
-                const [team, playerIdx] = playerKey.split(':');
-                const playerName = leagueData.teams[team]?.players[parseInt(playerIdx)];
-                
-                resultsHtml += `
-                    <div class="vote-result-item ${idx === 0 ? 'winner' : ''}">
-                        <div>
-                            <div style="font-weight: 700;">${idx + 1}. ${playerName}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-dim);">${team}</div>
+            
+            if (sortedVotes.length === 0) {
+                resultsHtml += '<p style="text-align: center; color: var(--text-dim); padding: 20px;">Aucun vote pour le moment. Soyez le premier à voter !</p>';
+            } else {
+                sortedVotes.forEach(([playerKey, votes], idx) => {
+                    const [team, playerIdx] = playerKey.split(':');
+                    const playerName = leagueData.teams[team]?.players[parseInt(playerIdx)];
+                    
+                    resultsHtml += `
+                        <div class="vote-result-item ${idx === 0 ? 'winner' : ''}">
+                            <div>
+                                <div style="font-weight: 700;">${idx + 1}. ${playerName}</div>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">${team}</div>
+                            </div>
+                            <div style="font-weight: 700; color: var(--secondary);">${votes} votes</div>
                         </div>
-                        <div style="font-weight: 700; color: var(--secondary);">${votes} votes</div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
 
             resultsContainer.innerHTML = resultsHtml;
 
@@ -2386,202 +2847,6 @@
             
             window.selectedTournamentPlayer = null;
             renderTournamentPlayerVoting();
-            showAlert('✅ Votre vote a été enregistré!', 'success');
-        };
-
-        function renderScorerVoting() {
-            const container = document.getElementById('voteTopScorer');
-            const resultsContainer = document.getElementById('resultsScorer');
-            
-            const visitorId = getVisitorId();
-            const hasVoted = leagueData.votes.scorer[visitorId] !== undefined;
-
-            let html = '';
-            let allPlayers = [];
-
-            Object.keys(leagueData.teams).forEach(teamName => {
-                const players = leagueData.teams[teamName].players;
-                players.forEach((player, idx) => {
-                    if (player.trim() !== '') {
-                        allPlayers.push({ name: player, team: teamName, idx: idx });
-                    }
-                });
-            });
-
-            allPlayers.forEach(player => {
-                const votes = Object.values(leagueData.votes.scorer).filter(v => v === `${player.team}:${player.idx}`).length;
-                const isVoted = hasVoted && leagueData.votes.scorer[visitorId] === `${player.team}:${player.idx}`;
-
-                html += `
-                    <div class="vote-option ${isVoted ? 'voted' : ''}" onclick="${hasVoted ? '' : `selectScorer('${player.team}', ${player.idx})`}">
-                        <div class="player-name">${player.name}</div>
-                        <div class="player-team">${player.team}</div>
-                        <div class="vote-count">⚽ ${votes} votes</div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-
-            // Show results
-            const voteCounts = {};
-            Object.values(leagueData.votes.scorer).forEach(vote => {
-                voteCounts[vote] = (voteCounts[vote] || 0) + 1;
-            });
-
-            const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            
-            let resultsHtml = '<h4 style="color: var(--primary); margin-bottom: 15px;">⚽ Top 5 Buteurs</h4>';
-            sortedVotes.forEach(([playerKey, votes], idx) => {
-                const [team, playerIdx] = playerKey.split(':');
-                const playerName = leagueData.teams[team]?.players[parseInt(playerIdx)];
-                
-                resultsHtml += `
-                    <div class="vote-result-item ${idx === 0 ? 'winner' : ''}">
-                        <div>
-                            <div style="font-weight: 700;">${idx + 1}. ${playerName}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-dim);">${team}</div>
-                        </div>
-                        <div style="font-weight: 700; color: var(--secondary);">${votes} votes</div>
-                    </div>
-                `;
-            });
-
-            resultsContainer.innerHTML = resultsHtml;
-
-            const btn = document.getElementById('btnVoteScorer');
-            if (hasVoted) {
-                btn.style.display = 'none';
-            } else {
-                btn.style.display = 'block';
-            }
-        }
-
-        window.selectScorer = function(team, playerIdx) {
-            window.selectedScorer = `${team}:${playerIdx}`;
-            
-            document.querySelectorAll('#voteTopScorer .vote-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            event.target.closest('.vote-option').classList.add('selected');
-        };
-
-        window.submitScorerVote = async function() {
-            if (!window.selectedScorer) {
-                showAlert('⚠️ Veuillez sélectionner un joueur!', 'error');
-                return;
-            }
-
-            const visitorId = getVisitorId();
-            
-            if (leagueData.votes.scorer[visitorId]) {
-                showAlert('⚠️ Vous avez déjà voté!', 'error');
-                return;
-            }
-
-            leagueData.votes.scorer[visitorId] = window.selectedScorer;
-            await saveToDatabase();
-            
-            window.selectedScorer = null;
-            renderScorerVoting();
-            showAlert('✅ Votre vote a été enregistré!', 'success');
-        };
-
-        function renderKeeperVoting() {
-            const container = document.getElementById('voteTopKeeper');
-            const resultsContainer = document.getElementById('resultsKeeper');
-            
-            const visitorId = getVisitorId();
-            const hasVoted = leagueData.votes.keeper[visitorId] !== undefined;
-
-            let html = '';
-            let allPlayers = [];
-
-            Object.keys(leagueData.teams).forEach(teamName => {
-                const players = leagueData.teams[teamName].players;
-                players.forEach((player, idx) => {
-                    if (player.trim() !== '') {
-                        allPlayers.push({ name: player, team: teamName, idx: idx });
-                    }
-                });
-            });
-
-            allPlayers.forEach(player => {
-                const votes = Object.values(leagueData.votes.keeper).filter(v => v === `${player.team}:${player.idx}`).length;
-                const isVoted = hasVoted && leagueData.votes.keeper[visitorId] === `${player.team}:${player.idx}`;
-
-                html += `
-                    <div class="vote-option ${isVoted ? 'voted' : ''}" onclick="${hasVoted ? '' : `selectKeeper('${player.team}', ${player.idx})`}">
-                        <div class="player-name">${player.name}</div>
-                        <div class="player-team">${player.team}</div>
-                        <div class="vote-count">🧤 ${votes} votes</div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-
-            // Show results
-            const voteCounts = {};
-            Object.values(leagueData.votes.keeper).forEach(vote => {
-                voteCounts[vote] = (voteCounts[vote] || 0) + 1;
-            });
-
-            const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            
-            let resultsHtml = '<h4 style="color: var(--primary); margin-bottom: 15px;">🧤 Top 5 Gardiens</h4>';
-            sortedVotes.forEach(([playerKey, votes], idx) => {
-                const [team, playerIdx] = playerKey.split(':');
-                const playerName = leagueData.teams[team]?.players[parseInt(playerIdx)];
-                
-                resultsHtml += `
-                    <div class="vote-result-item ${idx === 0 ? 'winner' : ''}">
-                        <div>
-                            <div style="font-weight: 700;">${idx + 1}. ${playerName}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-dim);">${team}</div>
-                        </div>
-                        <div style="font-weight: 700; color: var(--secondary);">${votes} votes</div>
-                    </div>
-                `;
-            });
-
-            resultsContainer.innerHTML = resultsHtml;
-
-            const btn = document.getElementById('btnVoteKeeper');
-            if (hasVoted) {
-                btn.style.display = 'none';
-            } else {
-                btn.style.display = 'block';
-            }
-        }
-
-        window.selectKeeper = function(team, playerIdx) {
-            window.selectedKeeper = `${team}:${playerIdx}`;
-            
-            document.querySelectorAll('#voteTopKeeper .vote-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            event.target.closest('.vote-option').classList.add('selected');
-        };
-
-        window.submitKeeperVote = async function() {
-            if (!window.selectedKeeper) {
-                showAlert('⚠️ Veuillez sélectionner un joueur!', 'error');
-                return;
-            }
-
-            const visitorId = getVisitorId();
-            
-            if (leagueData.votes.keeper[visitorId]) {
-                showAlert('⚠️ Vous avez déjà voté!', 'error');
-                return;
-            }
-
-            leagueData.votes.keeper[visitorId] = window.selectedKeeper;
-            await saveToDatabase();
-            
-            window.selectedKeeper = null;
-            renderKeeperVoting();
             showAlert('✅ Votre vote a été enregistré!', 'success');
         };
 
@@ -2658,6 +2923,7 @@
             });
 
             renderAdminComments();
+            updateNotificationMatchSelect();
         }
 
         window.updatePlayer = async function(teamName, index, value) {
@@ -2829,12 +3095,14 @@
                 calculateStandings();
                 leagueData.initialized = true;
                 leagueData.comments = {};
-                leagueData.votes = { tournament: {}, scorer: {}, keeper: {}, matches: {} };
+                leagueData.votes = { tournament: {}, matches: {} };
+                leagueData.notifications = [];
                 await saveToDatabase();
             } else {
                 ensureTeamsExist();
                 if (!leagueData.comments) leagueData.comments = {};
-                if (!leagueData.votes) leagueData.votes = { tournament: {}, scorer: {}, keeper: {}, matches: {} };
+                if (!leagueData.votes) leagueData.votes = { tournament: {}, matches: {} };
+                if (!leagueData.notifications) leagueData.notifications = [];
                 calculateStandings();
             }
             
@@ -2843,6 +3111,7 @@
             renderTeams();
             renderNews();
             renderVotingSection();
+            checkForNewNotifications();
             
             showLoading(false);
 
@@ -2857,6 +3126,7 @@
                     renderTeams();
                     renderNews();
                     renderVotingSection();
+                    checkForNewNotifications();
                     console.log("🔄 Données mises à jour en temps réel");
                 }
             });
