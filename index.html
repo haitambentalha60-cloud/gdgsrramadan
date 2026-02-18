@@ -328,9 +328,6 @@
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             transition: all 0.3s ease;
             border: 1px solid transparent;
         }
@@ -338,10 +335,27 @@
         .match:hover {
             border-color: var(--primary);
             transform: translateX(5px);
+            cursor: pointer;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .match-type-badge {
+            background: rgba(253, 122, 168, 0.2);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid var(--accent);
         }
 
         .match-teams {
-            flex: 1;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -699,11 +713,270 @@
             transform: translateY(-2px);
         }
 
+        /* COMMENTS SECTION STYLES */
+        .comments-section {
+            background: var(--bg-light);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 184, 148, 0.2);
+        }
+
+        .comments-header h3 {
+            font-family: 'Righteous', cursive;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .comment-form {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .comment-form input,
+        .comment-form textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: rgba(0, 184, 148, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .comment-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .comment-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .comment-date {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .comment-text {
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .delete-comment-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+
+        /* VOTING SECTION STYLES */
+        .voting-section {
+            background: var(--bg-light);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 2px solid rgba(253, 203, 110, 0.3);
+        }
+
+        .voting-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .voting-header h3 {
+            font-family: 'Righteous', cursive;
+            color: var(--secondary);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .vote-category {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .vote-category h4 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .vote-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .vote-option {
+            background: rgba(0, 184, 148, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .vote-option:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+        }
+
+        .vote-option.selected {
+            border-color: var(--secondary);
+            background: rgba(253, 203, 110, 0.2);
+        }
+
+        .vote-option.voted {
+            border-color: var(--primary);
+            background: rgba(0, 184, 148, 0.2);
+            cursor: default;
+        }
+
+        .player-name {
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .player-team {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .vote-count {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .vote-results {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .vote-result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(0, 184, 148, 0.1);
+            border-radius: 10px;
+        }
+
+        .vote-result-item.winner {
+            border: 2px solid var(--secondary);
+            background: rgba(253, 203, 110, 0.2);
+        }
+
+        .vote-bar {
+            height: 8px;
+            background: var(--primary);
+            border-radius: 4px;
+            margin-top: 5px;
+            transition: width 0.5s ease;
+        }
+
+        /* MATCH DETAIL MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-light);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid var(--primary);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         @media (max-width: 768px) {
             h1 { font-size: 2.5rem; }
             .subtitle { font-size: 1rem; }
             .groups-container {
                 grid-template-columns: 1fr;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 20px;
             }
         }
     </style>
@@ -724,6 +997,7 @@
                 <span class="info-badge">📅 18 Fév - 13 Mars</span>
                 <span class="info-badge">⚽ 9 Équipes</span>
                 <span class="info-badge">🏆 3 Groupes</span>
+                <span class="info-badge">🔄 Aller-Retour</span>
             </div>
         </header>
 
@@ -732,6 +1006,7 @@
             <button class="nav-btn" onclick="showSection('fixtures')">Calendrier</button>
             <button class="nav-btn" onclick="showSection('news')">Actualités</button>
             <button class="nav-btn" onclick="showSection('teams')">Équipes</button>
+            <button class="nav-btn" onclick="showSection('votes')">🏆 Votes</button>
             <button class="nav-btn" onclick="showSection('knockout')">Phase Finale</button>
             <button class="nav-btn" onclick="showSection('admin')">Admin</button>
         </nav>
@@ -763,6 +1038,40 @@
 
         <div id="teams" class="section">
             <div class="teams-grid" id="teamsGrid"></div>
+        </div>
+
+        <!-- NEW VOTES SECTION -->
+        <div id="votes" class="section">
+            <div class="voting-section">
+                <div class="voting-header">
+                    <h3>🏆 Votez pour vos Joueurs Préférés</h3>
+                    <p style="color: var(--text-dim); margin-top: 10px;">Votez pour les meilleurs joueurs du tournoi dans différentes catégories</p>
+                </div>
+
+                <!-- Meilleur Joueur du Tournoi -->
+                <div class="vote-category">
+                    <h4>⭐ Meilleur Joueur du Tournoi</h4>
+                    <div class="vote-options" id="votePlayerTournament"></div>
+                    <button class="update-btn" onclick="submitTournamentVote()" id="btnVoteTournament">Voter</button>
+                    <div class="vote-results" id="resultsTournament" style="margin-top: 20px;"></div>
+                </div>
+
+                <!-- Meilleur Buteur -->
+                <div class="vote-category">
+                    <h4>⚽ Meilleur Buteur</h4>
+                    <div class="vote-options" id="voteTopScorer"></div>
+                    <button class="update-btn" onclick="submitScorerVote()" id="btnVoteScorer">Voter</button>
+                    <div class="vote-results" id="resultsScorer" style="margin-top: 20px;"></div>
+                </div>
+
+                <!-- Meilleur Gardien -->
+                <div class="vote-category">
+                    <h4>🧤 Meilleur Gardien</h4>
+                    <div class="vote-options" id="voteTopKeeper"></div>
+                    <button class="update-btn" onclick="submitKeeperVote()" id="btnVoteKeeper">Voter</button>
+                    <div class="vote-results" id="resultsKeeper" style="margin-top: 20px;"></div>
+                </div>
+            </div>
         </div>
 
         <div id="knockout" class="section">
@@ -811,8 +1120,6 @@
                     <h4 style="margin-bottom: 20px; color: var(--text-dim);">Connexion Administrateur</h4>
                     <input type="password" id="adminPassword" placeholder="Mot de passe admin">
                     <button class="update-btn" onclick="loginAdmin()">Se connecter</button>
-                    <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-dim);">
-                    </p>
                 </div>
                 <div id="adminPanel" style="display: none;">
                     <div style="text-align: right; margin-bottom: 20px;">
@@ -866,6 +1173,13 @@
                                     <select id="newMatchAway" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"></select>
                                 </div>
                                 <div>
+                                    <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Type</label>
+                                    <select id="newMatchType" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                                        <option value="Aller">Match Aller</option>
+                                        <option value="Retour">Match Retour</option>
+                                    </select>
+                                </div>
+                                <div>
                                     <label style="display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem;">Date</label>
                                     <input type="date" id="newMatchDate" style="width: 100%; padding: 10px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
                                 </div>
@@ -886,8 +1200,22 @@
                         <div class="score-input-section" id="adminMatches"></div>
                         <button class="update-btn" onclick="saveAllData()">💾 Sauvegarder les scores</button>
                     </div>
+
+                    <!-- Comments Management Section -->
+                    <div class="admin-controls">
+                        <h3>💬 Gérer les Commentaires</h3>
+                        <div id="adminCommentsContainer" style="max-height: 400px; overflow-y: auto;"></div>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MATCH DETAIL MODAL -->
+    <div id="matchModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeMatchModal()">×</button>
+            <div id="modalContent"></div>
         </div>
     </div>
 
@@ -932,15 +1260,31 @@
             matches: [],
             standings: {},
             news: [],
+            comments: {},
+            votes: {
+                tournament: {},
+                scorer: {},
+                keeper: {},
+                matches: {}
+            },
             initialized: false
         };
+
+        // Get unique visitor ID
+        function getVisitorId() {
+            let visitorId = localStorage.getItem('visitorId');
+            if (!visitorId) {
+                visitorId = 'visitor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('visitorId', visitorId);
+            }
+            return visitorId;
+        }
 
         function safeNumber(value, defaultValue = 0) {
             const num = parseInt(value);
             return isNaN(num) ? defaultValue : num;
         }
 
-        // FIXED: Ensure all teams exist before processing
         function ensureTeamsExist() {
             Object.keys(TEAMS).forEach(group => {
                 TEAMS[group].forEach(teamName => {
@@ -1004,10 +1348,12 @@
             const fixtures = [];
             let matchId = 0;
             
+            // Generate home-away fixtures for each group (Aller-Retour system)
             Object.keys(TEAMS).forEach(group => {
                 const teams = TEAMS[group];
                 for (let i = 0; i < teams.length; i++) {
                     for (let j = i + 1; j < teams.length; j++) {
+                        // Match Aller
                         fixtures.push({
                             id: matchId++,
                             group: group,
@@ -1016,6 +1362,19 @@
                             homeScore: null,
                             awayScore: null,
                             date: null,
+                            matchType: 'Aller',
+                            stage: 'group'
+                        });
+                        // Match Retour
+                        fixtures.push({
+                            id: matchId++,
+                            group: group,
+                            home: teams[j],
+                            away: teams[i],
+                            homeScore: null,
+                            awayScore: null,
+                            date: null,
+                            matchType: 'Retour',
                             stage: 'group'
                         });
                     }
@@ -1056,10 +1415,8 @@
         function calculateStandings() {
             console.log("🔄 Calcul des classements...");
             
-            // FIXED: Ensure all teams exist first
             ensureTeamsExist();
 
-            // Reset all stats
             Object.keys(leagueData.teams).forEach(team => {
                 leagueData.teams[team].stats = {
                     played: 0,
@@ -1072,10 +1429,8 @@
                 };
             });
 
-            // Process matches with safety checks
             leagueData.matches.forEach((match, index) => {
                 if (match.homeScore !== null && match.awayScore !== null) {
-                    // FIXED: Check if teams exist before accessing
                     if (!leagueData.teams[match.home]) {
                         console.error(`❌ Équipe introuvable: ${match.home}`);
                         return;
@@ -1179,7 +1534,6 @@
                 container.appendChild(groupDiv);
             });
 
-            // Calculate and display best second
             renderBestSecond();
             updateKnockoutStage();
         }
@@ -1187,7 +1541,6 @@
         function renderBestSecond() {
             const bestSecondContainer = document.getElementById('bestSecondContainer');
             
-            // Get all second place teams
             const secondPlaces = [];
             Object.keys(leagueData.standings).forEach(group => {
                 if (leagueData.standings[group].length >= 2) {
@@ -1204,7 +1557,6 @@
                 return;
             }
 
-            // Sort by points, then goal difference, then goals scored
             secondPlaces.sort((a, b) => {
                 if (b.points !== a.points) return b.points - a.points;
                 if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
@@ -1236,12 +1588,10 @@
         }
 
         function updateKnockoutStage() {
-            // Update semi-finals with actual team names
             const groupAWinner = leagueData.standings['Groupe A']?.[0]?.name || '1er Groupe A';
             const groupBWinner = leagueData.standings['Groupe B']?.[0]?.name || '1er Groupe B';
             const groupCWinner = leagueData.standings['Groupe C']?.[0]?.name || '1er Groupe C';
             
-            // Get best second
             const secondPlaces = [];
             Object.keys(leagueData.standings).forEach(group => {
                 if (leagueData.standings[group].length >= 2) {
@@ -1257,7 +1607,6 @@
 
             const bestSecond = secondPlaces[0]?.name || 'Meilleur 2e';
 
-            // Update DOM
             const sf1team1 = document.getElementById('sf1-team1');
             const sf1team2 = document.getElementById('sf1-team2');
             const sf2team1 = document.getElementById('sf2-team1');
@@ -1269,7 +1618,6 @@
             if (sf2team2) sf2team2.textContent = groupCWinner;
         }
 
-        // NEWS FUNCTIONS
         function renderNews() {
             const container = document.getElementById('newsContainer');
             
@@ -1284,7 +1632,6 @@
                 return;
             }
 
-            // Sort news by date (newest first)
             const sortedNews = [...leagueData.news].sort((a, b) => b.timestamp - a.timestamp);
 
             container.innerHTML = sortedNews.map(news => {
@@ -1351,10 +1698,8 @@
                 return;
             }
 
-            // Convert image to base64 if present
             let imageData = null;
             if (imageFile) {
-                // Check file size (limit to 1MB for performance)
                 if (imageFile.size > 1024 * 1024) {
                     showAlert('⚠️ L\'image est trop grande (max 1MB)', 'error');
                     return;
@@ -1391,7 +1736,6 @@
             await saveToDatabase();
             renderNews();
 
-            // Clear form
             document.getElementById('newsTitle').value = '';
             document.getElementById('newsContent').value = '';
             document.getElementById('newsImageFile').value = '';
@@ -1417,7 +1761,6 @@
             showAlert('✅ Actualité supprimée!', 'success');
         };
 
-        // MATCH MANAGEMENT FUNCTIONS
         function renderMatchManagement() {
             if (!isAdmin) return;
 
@@ -1438,7 +1781,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <div style="flex: 1; min-width: 200px;">
                             <strong style="color: var(--secondary);">${match.home}</strong> vs <strong style="color: var(--accent);">${match.away}</strong>
-                            <div style="color: var(--text-dim); font-size: 0.9rem; margin-top: 5px;">${match.group}</div>
+                            <div style="color: var(--text-dim); font-size: 0.9rem; margin-top: 5px;">${match.group} - ${match.matchType || 'Aller'}</div>
                         </div>
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                             <input type="date" id="matchDate${index}" value="${dateStr}" 
@@ -1452,7 +1795,6 @@
                 container.appendChild(matchDiv);
             });
 
-            // Update team dropdowns for new match
             updateTeamDropdowns();
         }
 
@@ -1484,6 +1826,7 @@
             const group = document.getElementById('newMatchGroup').value;
             const home = document.getElementById('newMatchHome').value;
             const away = document.getElementById('newMatchAway').value;
+            const matchType = document.getElementById('newMatchType').value;
             const date = document.getElementById('newMatchDate').value;
             const time = document.getElementById('newMatchTime').value;
 
@@ -1502,6 +1845,7 @@
                 group: group,
                 home: home,
                 away: away,
+                matchType: matchType,
                 homeScore: null,
                 awayScore: null,
                 date: new Date(date + 'T' + time).toISOString(),
@@ -1515,7 +1859,6 @@
             renderFixtures();
             renderAdmin();
 
-            // Clear form
             document.getElementById('newMatchDate').value = '';
             document.getElementById('newMatchTime').value = '12:00';
 
@@ -1533,7 +1876,6 @@
             }
 
             leagueData.matches.splice(index, 1);
-            // Reassign IDs
             leagueData.matches.forEach((match, idx) => {
                 match.id = idx;
             });
@@ -1604,13 +1946,18 @@
                         `${match.homeScore} - ${match.awayScore}` : 
                         'vs';
                     
-                    html += `<div class="match">
+                    const matchTypeDisplay = match.matchType ? `<span class="match-type-badge">${match.matchType}</span>` : '';
+                    
+                    html += `<div class="match" onclick="openMatchModal(${match.id})">
+                        <div class="match-header">
+                            ${matchTypeDisplay}
+                            <span class="match-time">${match.time}</span>
+                        </div>
                         <div class="match-teams">
                             <span class="team-home">${match.home}</span>
                             <span class="match-vs">${score}</span>
                             <span class="team-away">${match.away}</span>
                         </div>
-                        <span class="match-time">${match.time}</span>
                     </div>`;
                 });
 
@@ -1618,6 +1965,625 @@
                 container.appendChild(matchdayDiv);
             });
         }
+
+        // MATCH MODAL FUNCTIONS
+        window.openMatchModal = function(matchId) {
+            const match = leagueData.matches.find(m => m.id === matchId);
+            if (!match) return;
+
+            const modal = document.getElementById('matchModal');
+            const modalContent = document.getElementById('modalContent');
+
+            const date = new Date(match.date);
+            const dateStr = date.toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const isFinished = match.homeScore !== null && match.awayScore !== null;
+            
+            let html = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="font-family: 'Righteous', cursive; color: var(--primary); font-size: 2rem; margin-bottom: 10px;">
+                        ${match.home} vs ${match.away}
+                    </h2>
+                    <p style="color: var(--text-dim); font-size: 1.1rem;">
+                        ${match.group} - ${match.matchType || 'Match'} - ${dateStr}
+                    </p>
+                    ${isFinished ? `
+                        <div style="font-size: 3rem; font-weight: 700; margin: 20px 0; color: var(--secondary);">
+                            ${match.homeScore} - ${match.awayScore}
+                        </div>
+                    ` : `
+                        <div style="margin: 20px 0; font-size: 1.2rem; color: var(--text-dim);">
+                            Match à venir
+                        </div>
+                    `}
+                </div>
+            `;
+
+            // Comments Section
+            html += renderMatchComments(matchId);
+
+            // Voting Section (only for finished matches)
+            if (isFinished) {
+                html += renderMatchVoting(matchId, match);
+            }
+
+            modalContent.innerHTML = html;
+            modal.classList.add('active');
+        };
+
+        window.closeMatchModal = function() {
+            const modal = document.getElementById('matchModal');
+            modal.classList.remove('active');
+        };
+
+        // COMMENTS FUNCTIONS
+        function renderMatchComments(matchId) {
+            if (!leagueData.comments) {
+                leagueData.comments = {};
+            }
+            if (!leagueData.comments[matchId]) {
+                leagueData.comments[matchId] = [];
+            }
+
+            const comments = leagueData.comments[matchId];
+
+            let html = `
+                <div class="comments-section">
+                    <div class="comments-header">
+                        <h3>💬 Commentaires (${comments.length})</h3>
+                    </div>
+                    
+                    <div class="comment-form">
+                        <h4 style="color: var(--text-dim); margin-bottom: 15px;">Laisser un commentaire</h4>
+                        <input type="text" id="commentName" placeholder="Votre nom">
+                        <textarea id="commentText" placeholder="Votre commentaire..."></textarea>
+                        <button class="update-btn" onclick="submitComment(${matchId})">Publier</button>
+                    </div>
+                    
+                    <div style="max-height: 400px; overflow-y: auto;">
+            `;
+
+            if (comments.length === 0) {
+                html += '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucun commentaire pour le moment. Soyez le premier à commenter !</p>';
+            } else {
+                comments.sort((a, b) => b.timestamp - a.timestamp).forEach(comment => {
+                    const date = new Date(comment.timestamp);
+                    const dateStr = date.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    html += `
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <span class="comment-author">${comment.name}</span>
+                                <div>
+                                    <span class="comment-date">${dateStr}</span>
+                                    ${isAdmin ? `<button class="delete-comment-btn" onclick="deleteComment(${matchId}, ${comment.id})">🗑️</button>` : ''}
+                                </div>
+                            </div>
+                            <div class="comment-text">${comment.text}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '</div></div>';
+            return html;
+        }
+
+        window.submitComment = async function(matchId) {
+            const nameInput = document.getElementById('commentName');
+            const textInput = document.getElementById('commentText');
+
+            const name = nameInput.value.trim();
+            const text = textInput.value.trim();
+
+            if (!name || !text) {
+                showAlert('⚠️ Veuillez remplir tous les champs!', 'error');
+                return;
+            }
+
+            if (!leagueData.comments) {
+                leagueData.comments = {};
+            }
+            if (!leagueData.comments[matchId]) {
+                leagueData.comments[matchId] = [];
+            }
+
+            const comment = {
+                id: Date.now(),
+                name: name,
+                text: text,
+                timestamp: Date.now()
+            };
+
+            leagueData.comments[matchId].push(comment);
+            await saveToDatabase();
+
+            nameInput.value = '';
+            textInput.value = '';
+
+            openMatchModal(matchId);
+            showAlert('✅ Commentaire publié!', 'success');
+        };
+
+        window.deleteComment = async function(matchId, commentId) {
+            if (!isAdmin) {
+                showAlert('Vous devez être connecté en tant qu\'admin!', 'error');
+                return;
+            }
+
+            if (!confirm('Voulez-vous vraiment supprimer ce commentaire ?')) {
+                return;
+            }
+
+            if (leagueData.comments[matchId]) {
+                leagueData.comments[matchId] = leagueData.comments[matchId].filter(c => c.id !== commentId);
+                await saveToDatabase();
+                openMatchModal(matchId);
+                showAlert('✅ Commentaire supprimé!', 'success');
+            }
+        };
+
+        // Render admin comments management
+        function renderAdminComments() {
+            if (!isAdmin) return;
+
+            const container = document.getElementById('adminCommentsContainer');
+            if (!container) return;
+
+            if (!leagueData.comments || Object.keys(leagueData.comments).length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucun commentaire pour le moment.</p>';
+                return;
+            }
+
+            let html = '';
+            Object.keys(leagueData.comments).forEach(matchId => {
+                const match = leagueData.matches.find(m => m.id == matchId);
+                if (!match) return;
+
+                const comments = leagueData.comments[matchId];
+                if (comments.length === 0) return;
+
+                html += `
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+                        <h4 style="color: var(--secondary); margin-bottom: 10px;">
+                            ${match.home} vs ${match.away} (${comments.length} commentaires)
+                        </h4>
+                `;
+
+                comments.forEach(comment => {
+                    const date = new Date(comment.timestamp);
+                    const dateStr = date.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    html += `
+                        <div class="comment-item" style="margin-bottom: 10px;">
+                            <div class="comment-header">
+                                <span class="comment-author">${comment.name}</span>
+                                <div>
+                                    <span class="comment-date">${dateStr}</span>
+                                    <button class="delete-comment-btn" onclick="deleteComment(${matchId}, ${comment.id})">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="comment-text">${comment.text}</div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // VOTING FUNCTIONS
+        function renderMatchVoting(matchId, match) {
+            if (!leagueData.votes) {
+                leagueData.votes = { tournament: {}, scorer: {}, keeper: {}, matches: {} };
+            }
+            if (!leagueData.votes.matches) {
+                leagueData.votes.matches = {};
+            }
+            if (!leagueData.votes.matches[matchId]) {
+                leagueData.votes.matches[matchId] = {};
+            }
+
+            const visitorId = getVisitorId();
+            const hasVoted = leagueData.votes.matches[matchId][visitorId] !== undefined;
+
+            // Get players from both teams
+            const homePlayers = leagueData.teams[match.home]?.players.filter(p => p.trim() !== '') || [];
+            const awayPlayers = leagueData.teams[match.away]?.players.filter(p => p.trim() !== '') || [];
+
+            let html = `
+                <div class="voting-section">
+                    <div class="voting-header">
+                        <h3>⭐ Votez pour le Meilleur Joueur du Match</h3>
+                    </div>
+                    <div class="vote-category">
+                        <div class="vote-options">
+            `;
+
+            // Home team players
+            homePlayers.forEach((player, idx) => {
+                const votes = Object.values(leagueData.votes.matches[matchId]).filter(v => v === `${match.home}:${idx}`).length;
+                const isVoted = hasVoted && leagueData.votes.matches[matchId][visitorId] === `${match.home}:${idx}`;
+                
+                html += `
+                    <div class="vote-option ${isVoted ? 'voted' : ''}" onclick="${hasVoted ? '' : `selectMatchPlayer(${matchId}, '${match.home}', ${idx})`}">
+                        <div class="player-name">${player}</div>
+                        <div class="player-team">${match.home}</div>
+                        <div class="vote-count">⭐ ${votes} votes</div>
+                    </div>
+                `;
+            });
+
+            // Away team players
+            awayPlayers.forEach((player, idx) => {
+                const votes = Object.values(leagueData.votes.matches[matchId]).filter(v => v === `${match.away}:${idx}`).length;
+                const isVoted = hasVoted && leagueData.votes.matches[matchId][visitorId] === `${match.away}:${idx}`;
+                
+                html += `
+                    <div class="vote-option ${isVoted ? 'voted' : ''}" onclick="${hasVoted ? '' : `selectMatchPlayer(${matchId}, '${match.away}', ${idx})`}">
+                        <div class="player-name">${player}</div>
+                        <div class="player-team">${match.away}</div>
+                        <div class="vote-count">⭐ ${votes} votes</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+                        ${hasVoted ? `
+                            <p style="text-align: center; color: var(--primary); margin-top: 20px; font-weight: 600;">
+                                ✅ Vous avez déjà voté pour ce match
+                            </p>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        window.selectMatchPlayer = async function(matchId, team, playerIdx) {
+            const visitorId = getVisitorId();
+            
+            if (!leagueData.votes.matches[matchId]) {
+                leagueData.votes.matches[matchId] = {};
+            }
+
+            if (leagueData.votes.matches[matchId][visitorId]) {
+                showAlert('⚠️ Vous avez déjà voté pour ce match!', 'error');
+                return;
+            }
+
+            leagueData.votes.matches[matchId][visitorId] = `${team}:${playerIdx}`;
+            await saveToDatabase();
+            
+            openMatchModal(matchId);
+            showAlert('✅ Votre vote a été enregistré!', 'success');
+        };
+
+        // Tournament-wide voting
+        function renderVotingSection() {
+            renderTournamentPlayerVoting();
+            renderScorerVoting();
+            renderKeeperVoting();
+        }
+
+        function renderTournamentPlayerVoting() {
+            const container = document.getElementById('votePlayerTournament');
+            const resultsContainer = document.getElementById('resultsTournament');
+            
+            if (!leagueData.votes) {
+                leagueData.votes = { tournament: {}, scorer: {}, keeper: {}, matches: {} };
+            }
+
+            const visitorId = getVisitorId();
+            const hasVoted = leagueData.votes.tournament[visitorId] !== undefined;
+
+            let html = '';
+            let allPlayers = [];
+
+            Object.keys(leagueData.teams).forEach(teamName => {
+                const players = leagueData.teams[teamName].players;
+                players.forEach((player, idx) => {
+                    if (player.trim() !== '') {
+                        allPlayers.push({ name: player, team: teamName, idx: idx });
+                    }
+                });
+            });
+
+            allPlayers.forEach(player => {
+                const votes = Object.values(leagueData.votes.tournament).filter(v => v === `${player.team}:${player.idx}`).length;
+                const isVoted = hasVoted && leagueData.votes.tournament[visitorId] === `${player.team}:${player.idx}`;
+
+                html += `
+                    <div class="vote-option ${isVoted ? 'voted' : ''}" onclick="${hasVoted ? '' : `selectTournamentPlayer('${player.team}', ${player.idx})`}">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-team">${player.team}</div>
+                        <div class="vote-count">⭐ ${votes} votes</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Show results
+            const voteCounts = {};
+            Object.values(leagueData.votes.tournament).forEach(vote => {
+                voteCounts[vote] = (voteCounts[vote] || 0) + 1;
+            });
+
+            const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            
+            let resultsHtml = '<h4 style="color: var(--primary); margin-bottom: 15px;">🏆 Top 5</h4>';
+            sortedVotes.forEach(([playerKey, votes], idx) => {
+                const [team, playerIdx] = playerKey.split(':');
+                const playerName = leagueData.teams[team]?.players[parseInt(playerIdx)];
+                
+                resultsHtml += `
+                    <div class="vote-result-item ${idx === 0 ? 'winner' : ''}">
+                        <div>
+                            <div style="font-weight: 700;">${idx + 1}. ${playerName}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-dim);">${team}</div>
+                        </div>
+                        <div style="font-weight: 700; color: var(--secondary);">${votes} votes</div>
+                    </div>
+                `;
+            });
+
+            resultsContainer.innerHTML = resultsHtml;
+
+            const btn = document.getElementById('btnVoteTournament');
+            if (hasVoted) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'block';
+            }
+        }
+
+        window.selectTournamentPlayer = function(team, playerIdx) {
+            window.selectedTournamentPlayer = `${team}:${playerIdx}`;
+            
+            document.querySelectorAll('#votePlayerTournament .vote-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.closest('.vote-option').classList.add('selected');
+        };
+
+        window.submitTournamentVote = async function() {
+            if (!window.selectedTournamentPlayer) {
+                showAlert('⚠️ Veuillez sélectionner un joueur!', 'error');
+                return;
+            }
+
+            const visitorId = getVisitorId();
+            
+            if (leagueData.votes.tournament[visitorId]) {
+                showAlert('⚠️ Vous avez déjà voté!', 'error');
+                return;
+            }
+
+            leagueData.votes.tournament[visitorId] = window.selectedTournamentPlayer;
+            await saveToDatabase();
+            
+            window.selectedTournamentPlayer = null;
+            renderTournamentPlayerVoting();
+            showAlert('✅ Votre vote a été enregistré!', 'success');
+        };
+
+        function renderScorerVoting() {
+            const container = document.getElementById('voteTopScorer');
+            const resultsContainer = document.getElementById('resultsScorer');
+            
+            const visitorId = getVisitorId();
+            const hasVoted = leagueData.votes.scorer[visitorId] !== undefined;
+
+            let html = '';
+            let allPlayers = [];
+
+            Object.keys(leagueData.teams).forEach(teamName => {
+                const players = leagueData.teams[teamName].players;
+                players.forEach((player, idx) => {
+                    if (player.trim() !== '') {
+                        allPlayers.push({ name: player, team: teamName, idx: idx });
+                    }
+                });
+            });
+
+            allPlayers.forEach(player => {
+                const votes = Object.values(leagueData.votes.scorer).filter(v => v === `${player.team}:${player.idx}`).length;
+                const isVoted = hasVoted && leagueData.votes.scorer[visitorId] === `${player.team}:${player.idx}`;
+
+                html += `
+                    <div class="vote-option ${isVoted ? 'voted' : ''}" onclick="${hasVoted ? '' : `selectScorer('${player.team}', ${player.idx})`}">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-team">${player.team}</div>
+                        <div class="vote-count">⚽ ${votes} votes</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Show results
+            const voteCounts = {};
+            Object.values(leagueData.votes.scorer).forEach(vote => {
+                voteCounts[vote] = (voteCounts[vote] || 0) + 1;
+            });
+
+            const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            
+            let resultsHtml = '<h4 style="color: var(--primary); margin-bottom: 15px;">⚽ Top 5 Buteurs</h4>';
+            sortedVotes.forEach(([playerKey, votes], idx) => {
+                const [team, playerIdx] = playerKey.split(':');
+                const playerName = leagueData.teams[team]?.players[parseInt(playerIdx)];
+                
+                resultsHtml += `
+                    <div class="vote-result-item ${idx === 0 ? 'winner' : ''}">
+                        <div>
+                            <div style="font-weight: 700;">${idx + 1}. ${playerName}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-dim);">${team}</div>
+                        </div>
+                        <div style="font-weight: 700; color: var(--secondary);">${votes} votes</div>
+                    </div>
+                `;
+            });
+
+            resultsContainer.innerHTML = resultsHtml;
+
+            const btn = document.getElementById('btnVoteScorer');
+            if (hasVoted) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'block';
+            }
+        }
+
+        window.selectScorer = function(team, playerIdx) {
+            window.selectedScorer = `${team}:${playerIdx}`;
+            
+            document.querySelectorAll('#voteTopScorer .vote-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.closest('.vote-option').classList.add('selected');
+        };
+
+        window.submitScorerVote = async function() {
+            if (!window.selectedScorer) {
+                showAlert('⚠️ Veuillez sélectionner un joueur!', 'error');
+                return;
+            }
+
+            const visitorId = getVisitorId();
+            
+            if (leagueData.votes.scorer[visitorId]) {
+                showAlert('⚠️ Vous avez déjà voté!', 'error');
+                return;
+            }
+
+            leagueData.votes.scorer[visitorId] = window.selectedScorer;
+            await saveToDatabase();
+            
+            window.selectedScorer = null;
+            renderScorerVoting();
+            showAlert('✅ Votre vote a été enregistré!', 'success');
+        };
+
+        function renderKeeperVoting() {
+            const container = document.getElementById('voteTopKeeper');
+            const resultsContainer = document.getElementById('resultsKeeper');
+            
+            const visitorId = getVisitorId();
+            const hasVoted = leagueData.votes.keeper[visitorId] !== undefined;
+
+            let html = '';
+            let allPlayers = [];
+
+            Object.keys(leagueData.teams).forEach(teamName => {
+                const players = leagueData.teams[teamName].players;
+                players.forEach((player, idx) => {
+                    if (player.trim() !== '') {
+                        allPlayers.push({ name: player, team: teamName, idx: idx });
+                    }
+                });
+            });
+
+            allPlayers.forEach(player => {
+                const votes = Object.values(leagueData.votes.keeper).filter(v => v === `${player.team}:${player.idx}`).length;
+                const isVoted = hasVoted && leagueData.votes.keeper[visitorId] === `${player.team}:${player.idx}`;
+
+                html += `
+                    <div class="vote-option ${isVoted ? 'voted' : ''}" onclick="${hasVoted ? '' : `selectKeeper('${player.team}', ${player.idx})`}">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-team">${player.team}</div>
+                        <div class="vote-count">🧤 ${votes} votes</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Show results
+            const voteCounts = {};
+            Object.values(leagueData.votes.keeper).forEach(vote => {
+                voteCounts[vote] = (voteCounts[vote] || 0) + 1;
+            });
+
+            const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            
+            let resultsHtml = '<h4 style="color: var(--primary); margin-bottom: 15px;">🧤 Top 5 Gardiens</h4>';
+            sortedVotes.forEach(([playerKey, votes], idx) => {
+                const [team, playerIdx] = playerKey.split(':');
+                const playerName = leagueData.teams[team]?.players[parseInt(playerIdx)];
+                
+                resultsHtml += `
+                    <div class="vote-result-item ${idx === 0 ? 'winner' : ''}">
+                        <div>
+                            <div style="font-weight: 700;">${idx + 1}. ${playerName}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-dim);">${team}</div>
+                        </div>
+                        <div style="font-weight: 700; color: var(--secondary);">${votes} votes</div>
+                    </div>
+                `;
+            });
+
+            resultsContainer.innerHTML = resultsHtml;
+
+            const btn = document.getElementById('btnVoteKeeper');
+            if (hasVoted) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'block';
+            }
+        }
+
+        window.selectKeeper = function(team, playerIdx) {
+            window.selectedKeeper = `${team}:${playerIdx}`;
+            
+            document.querySelectorAll('#voteTopKeeper .vote-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.closest('.vote-option').classList.add('selected');
+        };
+
+        window.submitKeeperVote = async function() {
+            if (!window.selectedKeeper) {
+                showAlert('⚠️ Veuillez sélectionner un joueur!', 'error');
+                return;
+            }
+
+            const visitorId = getVisitorId();
+            
+            if (leagueData.votes.keeper[visitorId]) {
+                showAlert('⚠️ Vous avez déjà voté!', 'error');
+                return;
+            }
+
+            leagueData.votes.keeper[visitorId] = window.selectedKeeper;
+            await saveToDatabase();
+            
+            window.selectedKeeper = null;
+            renderKeeperVoting();
+            showAlert('✅ Votre vote a été enregistré!', 'success');
+        };
 
         function renderTeams() {
             const container = document.getElementById('teamsGrid');
@@ -1677,7 +2643,7 @@
                     const dateStr = date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
                     
                     matchDiv.innerHTML = `
-                        <label>${dateStr} - ${match.home} vs ${match.away}</label>
+                        <label>${dateStr} - ${match.home} vs ${match.away} (${match.matchType || 'Aller'})</label>
                         <div class="score-inputs">
                             <input type="number" min="0" value="${match.homeScore !== null ? match.homeScore : ''}" 
                                    onchange="window.updateScore(${match.id}, 'home', this.value)">
@@ -1690,6 +2656,8 @@
                     container.appendChild(matchDiv);
                 }
             });
+
+            renderAdminComments();
         }
 
         window.updatePlayer = async function(teamName, index, value) {
@@ -1717,8 +2685,6 @@
             if (!isAdmin) return;
             const match = leagueData.matches.find(m => m.id === matchId);
             if (match) {
-                // If value is empty string, set to null (match not played)
-                // Otherwise convert to number
                 const scoreValue = value === '' || value === null || value === undefined ? null : safeNumber(value, 0);
                 
                 if (type === 'home') {
@@ -1733,7 +2699,6 @@
             try {
                 showLoading(true);
                 
-                // Ensure teams exist before saving
                 ensureTeamsExist();
                 
                 const dbRef = ref(database, 'league');
@@ -1763,7 +2728,6 @@
                 
                 if (snapshot.exists()) {
                     leagueData = snapshot.val();
-                    // Ensure all teams have proper structure
                     ensureTeamsExist();
                     console.log("✅ Données chargées depuis Firebase");
                     showLoading(false);
@@ -1847,6 +2811,10 @@
             
             document.getElementById(sectionId).classList.add('active');
             event.target.classList.add('active');
+
+            if (sectionId === 'votes') {
+                renderVotingSection();
+            }
         };
 
         async function init() {
@@ -1860,10 +2828,13 @@
                 generateFixtures();
                 calculateStandings();
                 leagueData.initialized = true;
+                leagueData.comments = {};
+                leagueData.votes = { tournament: {}, scorer: {}, keeper: {}, matches: {} };
                 await saveToDatabase();
             } else {
-                // Ensure teams structure is complete even when loading
                 ensureTeamsExist();
+                if (!leagueData.comments) leagueData.comments = {};
+                if (!leagueData.votes) leagueData.votes = { tournament: {}, scorer: {}, keeper: {}, matches: {} };
                 calculateStandings();
             }
             
@@ -1871,10 +2842,10 @@
             renderFixtures();
             renderTeams();
             renderNews();
+            renderVotingSection();
             
             showLoading(false);
 
-            // Listen for real-time updates
             const dbRef = ref(database, 'league');
             onValue(dbRef, (snapshot) => {
                 if (snapshot.exists() && !isAdmin) {
@@ -1885,6 +2856,7 @@
                     renderFixtures();
                     renderTeams();
                     renderNews();
+                    renderVotingSection();
                     console.log("🔄 Données mises à jour en temps réel");
                 }
             });
