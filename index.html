@@ -2,7 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="GDGSR Ramadan League 2026 - Tournoi de football">
+    <meta name="theme-color" content="#00b894">
     <title>GDGSR Ramadan League 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -1147,14 +1149,465 @@
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 2.5rem; }
-            .subtitle { font-size: 1rem; }
-            .groups-container {
-                grid-template-columns: 1fr;
+            /* Base */
+            body {
+                font-size: 14px;
             }
+            
+            /* Navigation */
+            nav {
+                padding: 12px 10px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                white-space: nowrap;
+            }
+            
+            nav button {
+                font-size: 0.8rem;
+                padding: 10px 14px;
+                margin: 0 3px;
+            }
+            
+            /* Header */
+            header {
+                padding: 25px 15px;
+            }
+            
+            h1, .logo { 
+                font-size: 2rem;
+                margin-bottom: 8px;
+            }
+            
+            .subtitle, .tagline { 
+                font-size: 0.85rem;
+            }
+            
+            /* Container */
+            .container {
+                padding: 12px;
+                margin: 10px auto;
+            }
+            
+            /* Sections */
+            .section {
+                padding: 15px;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+            }
+            
+            h3 {
+                font-size: 1.2rem;
+            }
+            
+            /* Groups */
+            .groups-container, .standings-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            /* Tables */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -15px;
+                padding: 0 15px;
+            }
+            
+            table {
+                font-size: 0.8rem;
+                min-width: 100%;
+            }
+            
+            table th,
+            table td {
+                padding: 8px 5px;
+                white-space: nowrap;
+            }
+            
+            /* Cacher colonnes moins importantes */
+            table th:nth-child(4),
+            table td:nth-child(4),
+            table th:nth-child(5),
+            table td:nth-child(5),
+            table th:nth-child(6),
+            table td:nth-child(6) {
+                display: none;
+            }
+            
+            /* Matches */
+            .match-card {
+                padding: 14px;
+                margin-bottom: 12px;
+            }
+            
+            .match-teams {
+                font-size: 0.9rem;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            
+            .match-score {
+                font-size: 1.6rem;
+                margin: 8px 0;
+            }
+            
+            .match-time, .match-date {
+                font-size: 0.75rem;
+            }
+            
+            .match-badge {
+                padding: 3px 8px;
+                font-size: 0.7rem;
+            }
+            
+            /* Teams */
+            .teams-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .team-card {
+                padding: 14px;
+            }
+            
+            .team-name {
+                font-size: 1rem;
+                margin-bottom: 12px;
+            }
+            
+            .player-name {
+                font-size: 0.8rem;
+                padding: 6px;
+                margin: 3px;
+            }
+            
+            /* News */
+            .news-item {
+                padding: 14px;
+                margin-bottom: 14px;
+            }
+            
+            .news-title {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+            
+            .news-content {
+                font-size: 0.85rem;
+                line-height: 1.5;
+            }
+            
+            .news-image {
+                max-height: 180px;
+                margin: 10px 0;
+            }
+            
+            .news-date {
+                font-size: 0.75rem;
+            }
+            
+            /* Modal */
             .modal-content {
                 width: 95%;
-                padding: 20px;
+                max-width: 95%;
+                margin: 10px auto;
+                padding: 18px 14px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            .close-modal {
+                top: 8px;
+                right: 8px;
+                width: 32px;
+                height: 32px;
+                font-size: 1.3rem;
+            }
+            
+            /* Comments */
+            .comments-section {
+                padding: 14px;
+            }
+            
+            .comment-form input,
+            .comment-form textarea {
+                font-size: 0.9rem;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .comment-form textarea {
+                min-height: 80px;
+            }
+            
+            .comment-item {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .comment-author {
+                font-size: 0.85rem;
+            }
+            
+            .comment-text {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+            
+            /* Voting */
+            .voting-section {
+                padding: 14px;
+            }
+            
+            .vote-category {
+                padding: 14px;
+                margin-bottom: 14px;
+            }
+            
+            .vote-category h4 {
+                font-size: 0.95rem;
+                margin-bottom: 12px;
+            }
+            
+            .vote-option {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+            
+            .vote-option .player-name {
+                font-size: 0.85rem;
+            }
+            
+            .vote-option .player-team {
+                font-size: 0.75rem;
+            }
+            
+            .vote-count {
+                font-size: 0.8rem;
+            }
+            
+            /* Admin */
+            .admin-panel {
+                padding: 14px;
+            }
+            
+            .admin-controls {
+                padding: 14px;
+                margin-bottom: 14px;
+            }
+            
+            .admin-controls h3 {
+                font-size: 1.1rem;
+                margin-bottom: 12px;
+            }
+            
+            .score-match {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 12px;
+            }
+            
+            .score-match label {
+                font-size: 0.85rem;
+                width: 100%;
+            }
+            
+            .score-inputs {
+                width: 100%;
+                justify-content: center;
+                gap: 12px;
+            }
+            
+            .score-inputs input {
+                width: 55px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+            
+            /* Notification form */
+            .notification-form select,
+            .notification-form input,
+            .notification-form textarea {
+                font-size: 0.85rem;
+                padding: 10px;
+            }
+            
+            .admin-notification-panel {
+                padding: 14px;
+            }
+            
+            /* Buttons */
+            .update-btn,
+            .delete-news-btn,
+            .delete-comment-btn {
+                padding: 9px 14px;
+                font-size: 0.85rem;
+            }
+            
+            button {
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Notifications */
+            .notifications-container {
+                top: 8px;
+                right: 8px;
+                left: 8px;
+                max-width: calc(100% - 16px);
+            }
+            
+            .notification {
+                padding: 12px;
+                font-size: 0.85rem;
+                border-radius: 12px;
+            }
+            
+            .notification-title {
+                font-size: 0.95rem;
+            }
+            
+            .notification-icon {
+                font-size: 1.3rem;
+                margin-right: 8px;
+            }
+            
+            .notification-body {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+            
+            .notification-time {
+                font-size: 0.7rem;
+            }
+            
+            /* Best second */
+            .best-second-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            /* Alerts */
+            .alert {
+                left: 8px;
+                right: 8px;
+                width: auto;
+                transform: translateX(0);
+                padding: 12px;
+                font-size: 0.85rem;
+                border-radius: 10px;
+            }
+            
+            /* Loading */
+            .loading {
+                padding: 18px;
+            }
+            
+            .loading-spinner {
+                width: 35px;
+                height: 35px;
+                border-width: 3px;
+            }
+            
+            /* Match management list */
+            #matchManagementList > div {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+            
+            #matchManagementList input[type="date"],
+            #matchManagementList input[type="time"],
+            #matchManagementList input[type="text"] {
+                font-size: 0.85rem;
+                padding: 8px;
+                margin: 4px 0;
+            }
+            
+            /* Inputs généraux */
+            input[type="text"],
+            input[type="number"],
+            input[type="date"],
+            input[type="time"],
+            textarea,
+            select {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                border-radius: 8px;
+            }
+        }
+        
+        /* Très petits écrans (iPhone SE, petits Android) */
+        @media (max-width: 375px) {
+            h1, .logo { 
+                font-size: 1.7rem;
+            }
+            
+            nav button {
+                font-size: 0.72rem;
+                padding: 8px 11px;
+            }
+            
+            table {
+                font-size: 0.72rem;
+            }
+            
+            .match-teams {
+                font-size: 0.82rem;
+            }
+            
+            .match-score {
+                font-size: 1.4rem;
+            }
+            
+            .score-inputs input {
+                width: 50px;
+                height: 42px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Mode paysage mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            header {
+                padding: 15px;
+            }
+            
+            h1, .logo {
+                font-size: 1.5rem;
+            }
+            
+            .modal-content {
+                margin: 8px auto;
+                max-height: 92vh;
+                padding: 15px;
+            }
+            
+            nav {
+                padding: 8px 10px;
+            }
+            
+            nav button {
+                padding: 7px 12px;
+            }
+        }
+        
+        /* Tablettes */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 90%;
+            }
+            
+            .groups-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .teams-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
