@@ -16,23 +16,42 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Handle background messages
+// Handle messages from the main page
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+        const { notification } = event.data;
+        
+        self.registration.showNotification(notification.title, {
+            body: notification.body,
+            icon: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+            badge: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+            tag: 'ramadan-league-' + Date.now(),
+            requireInteraction: true,
+            vibrate: [200, 100, 200],
+            data: notification.data
+        });
+    }
+});
+
+// Handle background messages (when page is not active)
 messaging.onBackgroundMessage((payload) => {
     console.log('📬 Message reçu en arrière-plan:', payload);
 
-    const notificationTitle = payload.notification?.title || payload.data?.title || 'Ramadan League';
+    const notificationData = payload.data || payload.notification || {};
+    
+    const notificationTitle = notificationData.title || payload.notification?.title || 'Ramadan League';
     const notificationOptions = {
-        body: payload.notification?.body || payload.data?.body || payload.data?.message,
-        icon: '/path/to/icon-192x192.png', // Ajoutez votre icône ici
-        badge: '/path/to/badge-72x72.png', // Ajoutez votre badge ici
+        body: notificationData.body || payload.notification?.body || notificationData.message || '',
+        icon: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+        badge: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
         tag: 'ramadan-league-notification',
         requireInteraction: true,
-        data: payload.data,
+        data: notificationData,
         vibrate: [200, 100, 200],
         actions: [
             {
                 action: 'view',
-                title: 'Voir le match'
+                title: 'Voir'
             },
             {
                 action: 'close',
@@ -42,16 +61,8 @@ messaging.onBackgroundMessage((payload) => {
     };
 
     // Personnaliser selon le type de notification
-    if (payload.data?.type === 'goal') {
-        notificationOptions.icon = '/path/to/goal-icon.png';
+    if (notificationData.type === 'goal') {
         notificationOptions.vibrate = [200, 100, 200, 100, 200];
-        notificationOptions.badge = '⚽';
-    } else if (payload.data?.type === 'match-start') {
-        notificationOptions.icon = '/path/to/start-icon.png';
-        notificationOptions.badge = '🟢';
-    } else if (payload.data?.type === 'match-end') {
-        notificationOptions.icon = '/path/to/end-icon.png';
-        notificationOptions.badge = '🔴';
     }
 
     return self.registration.showNotification(notificationTitle, notificationOptions);
@@ -63,18 +74,25 @@ self.addEventListener('notificationclick', (event) => {
     
     event.notification.close();
 
-    if (event.action === 'view') {
-        // Ouvrir la page du match
+    if (event.action === 'view' || !event.action) {
+        // Ouvrir ou focus la page
         event.waitUntil(
-            clients.openWindow('/')
-        );
-    } else if (event.action === 'close') {
-        // Juste fermer
-        return;
-    } else {
-        // Clic sur la notification elle-même
-        event.waitUntil(
-            clients.openWindow('/')
+            clients.matchAll({ type: 'window', includeUncontrolled: true })
+                .then((clientList) => {
+                    // Si une fenêtre est déjà ouverte, la focus
+                    for (let i = 0; i < clientList.length; i++) {
+                        const client = clientList[i];
+                        if (client.url.includes(self.registration.scope) && 'focus' in client) {
+                            return client.focus();
+                        }
+                    }
+                    // Sinon, ouvrir une nouvelle fenêtre
+                    if (clients.openWindow) {
+                        return clients.openWindow('/');
+                    }
+                })
         );
     }
 });
+
+console.log('✅ Service Worker Firebase Messaging initialisé');
