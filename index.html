@@ -1433,6 +1433,7 @@
         import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
         import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDAGuFQg0ofptIPk2MBvwBQQYtZUDdX8Dk",
@@ -1445,7 +1446,7 @@
             measurementId: "G-BE6D61PBDN"
         };
 
-        let app, database, analytics, messaging;
+        let app, database, analytics, messaging, functions;
         let isAdmin = false;
         const ADMIN_PASSWORD = "thegoat2008";
 
@@ -1453,6 +1454,7 @@
             app = initializeApp(firebaseConfig);
             analytics = getAnalytics(app);
             database = getDatabase(app);
+            functions = getFunctions(app);
             
             // Initialize Firebase Cloud Messaging
             if ('Notification' in window && 'serviceWorker' in navigator) {
@@ -1468,7 +1470,7 @@
 
         const TEAMS = {
             'Groupe A': ['2BAC SMA', '1BAC SM1', 'TCSF3'],
-            'Groupe B': ['2BAC SEG', '1BAC SM2', '1BAC Sexp'],
+            'Groupe B': ['TCSF1', '1BAC SM2', '1BAC Sexp'],
             'Groupe C': ['1BAC SEG', 'TCSF2', '2BAC SPC']
         };
 
@@ -1539,7 +1541,7 @@
                     // Get FCM token
                     try {
                         const token = await getToken(messaging, {
-                            vapidKey: 'BCEVc8GGEEtzi8FkKYwU0aXT59Zk0msr7rnsrgsNJR0wWW_-IwIAtD3eaUYXYUMRyjBeDym8Jghq8_xK-Jls2SI' // Remplacez par votre clé VAPID
+                            vapidKey: 'VOTRE_VAPID_KEY' // Remplacez par votre clé VAPID
                         });
                         
                         if (token) {
@@ -1827,7 +1829,6 @@
 
             let notifTitle = '';
             let notifBody = '';
-            let notifIcon = '';
 
             if (type === 'custom') {
                 const title = document.getElementById('notificationCustomTitle').value.trim();
@@ -1911,49 +1912,40 @@
             // Show notification immediately on interface
             showNotification(notification);
 
-            // ENVOYER LA VRAIE NOTIFICATION SYSTÈME (Fonctionne immédiatement!)
-            if ('Notification' in window && Notification.permission === 'granted') {
-                try {
-                    // Utiliser l'API Notification directe
-                    const systemNotification = new Notification(notifTitle, {
-                        body: notifBody,
-                        icon: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', // Icône de ballon de foot
-                        badge: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
-                        tag: 'ramadan-league-' + Date.now(),
-                        requireInteraction: true,
-                        vibrate: [200, 100, 200],
-                        silent: false,
-                        data: notification
-                    });
+            // APPELER LA CLOUD FUNCTION POUR ENVOYER LES VRAIES NOTIFICATIONS PUSH
+            try {
+                console.log('📤 Envoi de la notification via Cloud Function...');
+                
+                const sendNotificationToAll = httpsCallable(functions, 'sendNotificationToAll');
+                const result = await sendNotificationToAll(notification);
 
-                    systemNotification.onclick = function(event) {
-                        event.preventDefault();
-                        window.focus();
-                        if (notification.matchId) {
-                            openMatchModal(notification.matchId);
-                        }
-                    };
+                console.log('✅ Résultat Cloud Function:', result.data);
 
-                    console.log('✅ Notification système envoyée');
-                    
-                    // Envoyer aussi via Service Worker pour background
-                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                        navigator.serviceWorker.controller.postMessage({
-                            type: 'SHOW_NOTIFICATION',
-                            notification: {
-                                title: notifTitle,
-                                body: notifBody,
-                                data: notification
-                            }
-                        });
-                    }
-                    
-                } catch (error) {
-                    console.error('❌ Erreur notification système:', error);
+                if (result.data.success) {
+                    showAlert(`✅ Notification envoyée à ${result.data.successCount} utilisateurs !`, 'success');
+                } else {
+                    showAlert(`⚠️ Erreur: ${result.data.message}`, 'error');
                 }
-            } else {
-                console.warn('⚠️ Notifications non autorisées');
-                showAlert('⚠️ Veuillez autoriser les notifications dans votre navigateur', 'error');
+
+            } catch (error) {
+                console.error('❌ Erreur Cloud Function:', error);
+                showAlert('❌ Erreur lors de l\'envoi: ' + error.message, 'error');
+                
+                // Fallback: notification locale pour les utilisateurs connectés
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    try {
+                        new Notification(notifTitle, {
+                            body: notifBody,
+                            icon: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                            badge: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                            tag: 'ramadan-league-' + Date.now(),
+                            requireInteraction: true,
+                            vibrate: [200, 100, 200]
+                        });
+                    } catch (notifError) {
+                        console.error('❌ Erreur notification:', notifError);
+                    }
+                }
             }
 
             // Clear form
@@ -1964,8 +1956,6 @@
             document.getElementById('notificationCustomTitle').value = '';
             document.getElementById('notificationCustomMessage').value = '';
             updateNotificationForm();
-
-            showAlert('✅ Notification envoyée à tous les utilisateurs connectés!', 'success');
         };
 
         // Check for new notifications
@@ -2103,40 +2093,61 @@
             const fixtures = [];
             let matchId = 0;
             
-            // Generate home-away fixtures for each group (Aller-Retour system)
+            // Generate BALANCED home-away fixtures for each group
+            // Each team plays 2 home games and 2 away games (total 4 games per team)
             Object.keys(TEAMS).forEach(group => {
                 const teams = TEAMS[group];
-                for (let i = 0; i < teams.length; i++) {
-                    for (let j = i + 1; j < teams.length; j++) {
-                        // Match Aller
-                        fixtures.push({
-                            id: matchId++,
-                            group: group,
-                            home: teams[i],
-                            away: teams[j],
-                            homeScore: null,
-                            awayScore: null,
-                            date: null,
-                            matchType: 'Aller',
-                            stage: 'group',
-                            referee: ''
-                        });
-                        // Match Retour
-                        fixtures.push({
-                            id: matchId++,
-                            group: group,
-                            home: teams[j],
-                            away: teams[i],
-                            homeScore: null,
-                            awayScore: null,
-                            date: null,
-                            matchType: 'Retour',
-                            stage: 'group',
-                            referee: ''
-                        });
+                const numTeams = teams.length; // 3 teams per group
+                
+                // Round-robin scheduling ensuring balance
+                const matches = [];
+                
+                // Generate all possible matchups
+                for (let i = 0; i < numTeams; i++) {
+                    for (let j = i + 1; j < numTeams; j++) {
+                        matches.push({ home: i, away: j });
                     }
                 }
+                
+                // For 3 teams: we have 3 matchups total
+                // Each matchup is played twice (home and away)
+                // Total: 6 matches (each team plays 4 matches: 2 home, 2 away)
+                
+                matches.forEach(match => {
+                    // Match Aller (first leg)
+                    fixtures.push({
+                        id: matchId++,
+                        group: group,
+                        home: teams[match.home],
+                        away: teams[match.away],
+                        homeScore: null,
+                        awayScore: null,
+                        scorers: [],
+                        date: null,
+                        matchType: 'Aller',
+                        stage: 'group',
+                        referee: ''
+                    });
+                    
+                    // Match Retour (second leg - reversed)
+                    fixtures.push({
+                        id: matchId++,
+                        group: group,
+                        home: teams[match.away],
+                        away: teams[match.home],
+                        homeScore: null,
+                        awayScore: null,
+                        scorers: [],
+                        date: null,
+                        matchType: 'Retour',
+                        stage: 'group',
+                        referee: ''
+                    });
+                });
             });
+
+            // Total: 3 groups × 6 matches = 18 matches
+            console.log(`✅ ${fixtures.length} matchs générés (18 attendus)`);
 
             const startDate = new Date('2026-02-18');
             const endDate = new Date('2026-03-13');
@@ -2155,7 +2166,7 @@
                         }
                     } else {
                         const daysSinceStart = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24));
-                        if (daysSinceStart % 2 === 0) {
+                        if (daysSinceStart % 2 === 0 && matchIndex < fixtures.length) {
                             fixtures[matchIndex].date = currentDate.toISOString();
                             fixtures[matchIndex].time = '12:00-12:30';
                             matchIndex++;
@@ -2500,7 +2511,59 @@
             document.getElementById('imagePreview').style.display = 'none';
 
             showAlert('✅ Actualité publiée avec succès!', 'success');
+
+            // ENVOYER AUTOMATIQUEMENT UNE NOTIFICATION POUR LA NOUVELLE ACTUALITÉ
+            await autoSendNewsNotification(newsItem);
         };
+
+        // Notification automatique pour une actualité
+        async function autoSendNewsNotification(newsItem) {
+            // Créer un résumé court (highlight)
+            const highlight = newsItem.content.length > 100 
+                ? newsItem.content.substring(0, 100) + '...'
+                : newsItem.content;
+
+            const notification = {
+                id: Date.now(),
+                timestamp: Date.now(),
+                type: 'custom',
+                title: `📰 ${newsItem.title}`,
+                message: highlight
+            };
+
+            if (!leagueData.notifications) leagueData.notifications = [];
+            leagueData.notifications.push(notification);
+            await saveToDatabase();
+
+            // Notification locale
+            showNotification(notification);
+            
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification(notification.title, {
+                        body: notification.message,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                        badge: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                        tag: 'ramadan-league-news-' + Date.now(),
+                        requireInteraction: true,
+                        vibrate: [200, 100, 200]
+                    });
+                } catch (error) {
+                    console.error('❌ Erreur notification:', error);
+                }
+            }
+
+            // Cloud Function
+            if (functions) {
+                try {
+                    const sendNotificationToAll = httpsCallable(functions, 'sendNotificationToAll');
+                    await sendNotificationToAll(notification);
+                    console.log('✅ Notification actualité envoyée via Cloud Function');
+                } catch (error) {
+                    console.error('⚠️ Cloud Function:', error);
+                }
+            }
+        }
 
         window.deleteNews = async function(newsId) {
             if (!isAdmin) {
@@ -3222,6 +3285,9 @@
                     const date = new Date(match.date);
                     const dateStr = date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
                     
+                    const scorers = match.scorers || [];
+                    const scorersText = scorers.length > 0 ? scorers.join(', ') : 'Aucun buteur';
+                    
                     matchDiv.innerHTML = `
                         <label>${dateStr} - ${match.home} vs ${match.away} (${match.matchType || 'Aller'})</label>
                         <div class="score-inputs">
@@ -3230,6 +3296,18 @@
                             <span style="color: var(--text-dim);">-</span>
                             <input type="number" min="0" value="${match.awayScore !== null ? match.awayScore : ''}"
                                    onchange="window.updateScore(${match.id}, 'away', this.value)">
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 0.85rem; color: var(--text-dim);">Buteurs (séparés par virgule):</label>
+                            <input type="text" 
+                                   id="scorers${match.id}" 
+                                   value="${scorers.join(', ')}"
+                                   placeholder="Ex: Ahmed 23', Mohamed 45'"
+                                   style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"
+                                   onchange="window.updateScorers(${match.id}, this.value)">
+                            <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 5px;">
+                                Format: Nom Minute', Nom Minute' (Ex: Ahmed 23', Mohamed 45')
+                            </div>
                         </div>
                     `;
 
@@ -3240,6 +3318,17 @@
             renderAdminComments();
             updateNotificationMatchSelect();
         }
+
+        window.updateScorers = async function(matchId, value) {
+            if (!isAdmin) return;
+            const match = leagueData.matches.find(m => m.id === matchId);
+            if (match) {
+                const scorersArray = value.split(',').map(s => s.trim()).filter(s => s !== '');
+                match.scorers = scorersArray;
+                await saveToDatabase();
+                showAlert('✅ Buteurs mis à jour!', 'success');
+            }
+        };
 
         window.updatePlayer = async function(teamName, index, value) {
             if (!isAdmin) return;
@@ -3266,6 +3355,9 @@
             if (!isAdmin) return;
             const match = leagueData.matches.find(m => m.id === matchId);
             if (match) {
+                const oldHomeScore = match.homeScore;
+                const oldAwayScore = match.awayScore;
+                
                 const scoreValue = value === '' || value === null || value === undefined ? null : safeNumber(value, 0);
                 
                 if (type === 'home') {
@@ -3273,8 +3365,74 @@
                 } else {
                     match.awayScore = scoreValue;
                 }
+                
+                // Détecter les buts et envoyer notification automatique
+                const newHomeScore = match.homeScore;
+                const newAwayScore = match.awayScore;
+                
+                if (newHomeScore !== null && newAwayScore !== null && 
+                    oldHomeScore !== null && oldAwayScore !== null) {
+                    
+                    if (newHomeScore > oldHomeScore) {
+                        setTimeout(() => autoSendGoalNotification(match, 'home'), 500);
+                    } else if (newAwayScore > oldAwayScore) {
+                        setTimeout(() => autoSendGoalNotification(match, 'away'), 500);
+                    }
+                }
             }
         };
+
+        // Notification automatique de but
+        async function autoSendGoalNotification(match, team) {
+            const notification = {
+                id: Date.now(),
+                timestamp: Date.now(),
+                type: 'goal',
+                matchId: match.id,
+                team: team === 'home' ? match.home : match.away,
+                homeTeam: match.home,
+                awayTeam: match.away,
+                minute: '?',
+                player: '',
+                score: {
+                    home: match.homeScore,
+                    away: match.awayScore
+                }
+            };
+
+            if (!leagueData.notifications) leagueData.notifications = [];
+            leagueData.notifications.push(notification);
+            await saveToDatabase();
+
+            const notifTitle = `⚽ BUT ! ${notification.team}`;
+            const notifBody = `${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
+
+            showNotification(notification);
+            
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification(notifTitle, {
+                        body: notifBody,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                        badge: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                        tag: 'ramadan-league-' + Date.now(),
+                        requireInteraction: true,
+                        vibrate: [200, 100, 200, 100, 200]
+                    });
+                } catch (error) {
+                    console.error('❌ Erreur notification:', error);
+                }
+            }
+
+            if (functions) {
+                try {
+                    const sendNotificationToAll = httpsCallable(functions, 'sendNotificationToAll');
+                    await sendNotificationToAll(notification);
+                } catch (error) {
+                    console.error('⚠️ Cloud Function:', error);
+                }
+            }
+        }
 
         async function saveToDatabase() {
             try {
@@ -3476,4 +3634,3 @@
     </script>
 </body>
 </html>
-
