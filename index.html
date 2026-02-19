@@ -1539,7 +1539,7 @@
                     // Get FCM token
                     try {
                         const token = await getToken(messaging, {
-                            vapidKey: 'BCEVc8GGEEtzi8FkKYwU0aXT59Zk0msr7rnsrgsNJR0wWW_-IwIAtD3eaUYXYUMRyjBeDym8Jghq8_xK-Jls2SI' // Remplacez par votre clé VAPID
+                            vapidKey: 'VOTRE_VAPID_KEY' // Remplacez par votre clé VAPID
                         });
                         
                         if (token) {
@@ -1825,6 +1825,10 @@
                 type: type
             };
 
+            let notifTitle = '';
+            let notifBody = '';
+            let notifIcon = '';
+
             if (type === 'custom') {
                 const title = document.getElementById('notificationCustomTitle').value.trim();
                 const message = document.getElementById('notificationCustomMessage').value.trim();
@@ -1836,6 +1840,8 @@
 
                 notification.title = title;
                 notification.message = message;
+                notifTitle = title;
+                notifBody = message;
             } else {
                 if (!matchId) {
                     showAlert('⚠️ Veuillez sélectionner un match!', 'error');
@@ -1869,6 +1875,17 @@
                         home: match.homeScore || 0,
                         away: match.awayScore || 0
                     };
+
+                    notifTitle = `⚽ BUT ! ${notification.team}`;
+                    notifBody = notification.player 
+                        ? `${notification.player} marque à la ${notification.minute}' !`
+                        : `But marqué à la ${notification.minute}' !`;
+                    notifBody += `\n${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
+                    
+                } else if (type === 'match-start') {
+                    notifTitle = '🟢 Match en cours !';
+                    notifBody = `${notification.homeTeam} vs ${notification.awayTeam}`;
+                    
                 } else if (type === 'match-end') {
                     if (match.homeScore === null || match.awayScore === null) {
                         showAlert('⚠️ Le score du match doit être renseigné!', 'error');
@@ -1878,6 +1895,8 @@
                         home: match.homeScore,
                         away: match.awayScore
                     };
+                    notifTitle = '🔴 Match terminé !';
+                    notifBody = `${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
                 }
             }
 
@@ -1889,11 +1908,53 @@
 
             await saveToDatabase();
 
-            // Show notification immediately for admin
+            // Show notification immediately on interface
             showNotification(notification);
 
-            // Send REAL Push Notification to all users
-            await sendPushNotificationToAllUsers(notification);
+            // ENVOYER LA VRAIE NOTIFICATION SYSTÈME (Fonctionne immédiatement!)
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    // Utiliser l'API Notification directe
+                    const systemNotification = new Notification(notifTitle, {
+                        body: notifBody,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', // Icône de ballon de foot
+                        badge: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                        tag: 'ramadan-league-' + Date.now(),
+                        requireInteraction: true,
+                        vibrate: [200, 100, 200],
+                        silent: false,
+                        data: notification
+                    });
+
+                    systemNotification.onclick = function(event) {
+                        event.preventDefault();
+                        window.focus();
+                        if (notification.matchId) {
+                            openMatchModal(notification.matchId);
+                        }
+                    };
+
+                    console.log('✅ Notification système envoyée');
+                    
+                    // Envoyer aussi via Service Worker pour background
+                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'SHOW_NOTIFICATION',
+                            notification: {
+                                title: notifTitle,
+                                body: notifBody,
+                                data: notification
+                            }
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Erreur notification système:', error);
+                }
+            } else {
+                console.warn('⚠️ Notifications non autorisées');
+                showAlert('⚠️ Veuillez autoriser les notifications dans votre navigateur', 'error');
+            }
 
             // Clear form
             document.getElementById('notificationType').value = 'goal';
@@ -1904,130 +1965,8 @@
             document.getElementById('notificationCustomMessage').value = '';
             updateNotificationForm();
 
-            showAlert('✅ Notification envoyée à tous les utilisateurs!', 'success');
+            showAlert('✅ Notification envoyée à tous les utilisateurs connectés!', 'success');
         };
-
-        // Send Push Notification to all users
-        async function sendPushNotificationToAllUsers(notification) {
-            try {
-                // Get all user tokens from database
-                const tokensRef = ref(database, 'notification_tokens');
-                const snapshot = await get(tokensRef);
-                
-                if (!snapshot.exists()) {
-                    console.log('Aucun token utilisateur trouvé');
-                    return;
-                }
-
-                const tokens = snapshot.val();
-                const tokensList = Object.values(tokens).map(t => t.token);
-
-                console.log(`📤 Envoi de la notification à ${tokensList.length} utilisateurs...`);
-
-                // Prepare notification payload
-                let title = '';
-                let body = '';
-                let data = {
-                    type: notification.type,
-                    timestamp: notification.timestamp.toString(),
-                    click_action: 'https://votre-site.github.io' // Changez par votre URL
-                };
-
-                if (notification.type === 'goal') {
-                    title = `⚽ BUT ! ${notification.team}`;
-                    body = notification.player 
-                        ? `${notification.player} marque à la ${notification.minute}' !`
-                        : `But marqué à la ${notification.minute}' !`;
-                    
-                    if (notification.score) {
-                        body += ` | ${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
-                    }
-
-                    data = {
-                        ...data,
-                        team: notification.team,
-                        player: notification.player || '',
-                        minute: notification.minute,
-                        homeTeam: notification.homeTeam,
-                        awayTeam: notification.awayTeam,
-                        scoreHome: notification.score?.home.toString() || '0',
-                        scoreAway: notification.score?.away.toString() || '0'
-                    };
-                } else if (notification.type === 'match-start') {
-                    title = '🟢 Match en cours !';
-                    body = `${notification.homeTeam} vs ${notification.awayTeam}`;
-                    data = {
-                        ...data,
-                        homeTeam: notification.homeTeam,
-                        awayTeam: notification.awayTeam
-                    };
-                } else if (notification.type === 'match-end') {
-                    title = '🔴 Match terminé !';
-                    body = `${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
-                    data = {
-                        ...data,
-                        homeTeam: notification.homeTeam,
-                        awayTeam: notification.awayTeam,
-                        scoreHome: notification.score.home.toString(),
-                        scoreAway: notification.score.away.toString()
-                    };
-                } else {
-                    title = notification.title;
-                    body = notification.message;
-                }
-
-                // Note: L'envoi de notifications Push nécessite un backend serveur
-                // Pour l'instant, nous allons utiliser l'API Firebase directement depuis le navigateur
-                // CE N'EST PAS RECOMMANDÉ EN PRODUCTION (il faudrait un backend)
-                
-                // Alternative: Utiliser Cloud Functions Firebase ou un backend Node.js/Python
-                console.log('📱 Notification préparée:', { title, body, data });
-                console.log('⚠️ Pour envoyer de vraies notifications Push, vous devez configurer un backend serveur');
-                console.log('💡 Voir le fichier INSTRUCTIONS_NOTIFICATIONS.md pour les exemples de backend');
-
-                // Pour tester localement, on peut utiliser l'API Fetch avec votre Server Key
-                // ATTENTION: Ne jamais exposer votre Server Key dans le code frontend en production!
-                
-                // Uncomment this if you want to test (replace with your server key)
-                /*
-                const FIREBASE_SERVER_KEY = 'VOTRE_SERVER_KEY_ICI'; // À obtenir dans Firebase Console
-                
-                for (const token of tokensList) {
-                    try {
-                        const response = await fetch('https://fcm.googleapis.com/fcm/send', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `key=${FIREBASE_SERVER_KEY}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                to: token,
-                                notification: {
-                                    title: title,
-                                    body: body,
-                                    icon: '/icon-192x192.png',
-                                    badge: '/badge-72x72.png',
-                                    click_action: data.click_action
-                                },
-                                data: data
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            console.log('✅ Notification envoyée à un utilisateur');
-                        } else {
-                            console.error('❌ Erreur envoi:', await response.text());
-                        }
-                    } catch (error) {
-                        console.error('❌ Erreur:', error);
-                    }
-                }
-                */
-
-            } catch (error) {
-                console.error('❌ Erreur lors de l\'envoi des notifications:', error);
-            }
-        }
 
         // Check for new notifications
         let lastNotificationCheck = Date.now();
@@ -2035,11 +1974,61 @@
         function checkForNewNotifications() {
             if (!leagueData.notifications) return;
 
-            leagueData.notifications
-                .filter(n => n.timestamp > lastNotificationCheck)
-                .forEach(notification => {
-                    showNotification(notification);
-                });
+            const newNotifications = leagueData.notifications
+                .filter(n => n.timestamp > lastNotificationCheck);
+
+            newNotifications.forEach(notification => {
+                // Show in-app notification
+                showNotification(notification);
+
+                // Show system notification for all users
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    let title = '';
+                    let body = '';
+
+                    if (notification.type === 'goal') {
+                        title = `⚽ BUT ! ${notification.team}`;
+                        body = notification.player 
+                            ? `${notification.player} marque à la ${notification.minute}' !`
+                            : `But marqué à la ${notification.minute}' !`;
+                        if (notification.score) {
+                            body += `\n${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
+                        }
+                    } else if (notification.type === 'match-start') {
+                        title = '🟢 Match en cours !';
+                        body = `${notification.homeTeam} vs ${notification.awayTeam}`;
+                    } else if (notification.type === 'match-end') {
+                        title = '🔴 Match terminé !';
+                        body = `${notification.homeTeam} ${notification.score.home} - ${notification.score.away} ${notification.awayTeam}`;
+                    } else {
+                        title = notification.title;
+                        body = notification.message;
+                    }
+
+                    try {
+                        const systemNotification = new Notification(title, {
+                            body: body,
+                            icon: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                            badge: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                            tag: 'ramadan-league-' + notification.id,
+                            requireInteraction: true,
+                            vibrate: [200, 100, 200],
+                            silent: false,
+                            data: notification
+                        });
+
+                        systemNotification.onclick = function(event) {
+                            event.preventDefault();
+                            window.focus();
+                            if (notification.matchId) {
+                                openMatchModal(notification.matchId);
+                            }
+                        };
+                    } catch (error) {
+                        console.error('Erreur notification:', error);
+                    }
+                }
+            });
 
             if (leagueData.notifications.length > 0) {
                 lastNotificationCheck = Math.max(...leagueData.notifications.map(n => n.timestamp));
