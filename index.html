@@ -1148,6 +1148,28 @@
             justify-content: center;
         }
 
+        @keyframes slideInUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutDown {
+            from {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+        }
+
         @media (max-width: 768px) {
             /* Base */
             body {
@@ -2145,28 +2167,6 @@
                 setTimeout(() => banner.remove(), 300);
             }
         };
-
-        @keyframes slideInUp {
-            from {
-                transform: translateX(-50%) translateY(100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(-50%) translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideOutDown {
-            from {
-                transform: translateX(-50%) translateY(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(-50%) translateY(100px);
-                opacity: 0;
-            }
-        }
 
         // NOTIFICATION SYSTEM (updated to trigger push notifications)
         function showNotification(notification) {
