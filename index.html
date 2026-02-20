@@ -3448,9 +3448,154 @@
             if (isFinished) {
                 html += renderMatchVoting(matchId, match);
             }
+            
+            // Predictions Section (only for upcoming matches)
+            if (!isFinished) {
+                html += renderMatchPredictions(matchId, match);
+            }
 
             modalContent.innerHTML = html;
             modal.classList.add('active');
+        };
+
+        // PREDICTIONS SYSTEM
+        function renderMatchPredictions(matchId, match) {
+            if (!leagueData.predictions) {
+                leagueData.predictions = {};
+            }
+            if (!leagueData.predictions[matchId]) {
+                leagueData.predictions[matchId] = {};
+            }
+
+            const visitorId = getVisitorId();
+            const userPrediction = leagueData.predictions[matchId][visitorId];
+            const hasPredicted = userPrediction !== undefined;
+
+            let html = `
+                <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-top: 25px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px; font-size: 1.3rem;">🔮 Prédiction du Score</h3>
+                    
+                    ${hasPredicted ? `
+                        <div style="text-align: center; padding: 20px; background: rgba(0, 184, 148, 0.1); border-radius: 10px;">
+                            <p style="color: var(--text-dim); margin-bottom: 10px;">Votre prédiction :</p>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--secondary);">
+                                ${userPrediction.homeScore} - ${userPrediction.awayScore}
+                            </div>
+                            <button onclick="changePrediction(${matchId})" class="update-btn" style="margin-top: 15px;">
+                                Modifier ma prédiction
+                            </button>
+                        </div>
+                    ` : `
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-dim); margin-bottom: 15px;">Prédisez le score de ce match :</p>
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 20px;">
+                                <div>
+                                    <p style="font-weight: 600; margin-bottom: 8px; color: var(--text);">${match.home}</p>
+                                    <input type="number" id="predHomeScore${matchId}" min="0" max="20" value="0" 
+                                           style="width: 70px; height: 60px; text-align: center; font-size: 1.5rem; font-weight: 700; background: rgba(0, 184, 148, 0.1); border: 2px solid var(--primary); border-radius: 10px; color: var(--text);">
+                                </div>
+                                <div style="font-size: 2rem; color: var(--text-dim);">-</div>
+                                <div>
+                                    <p style="font-weight: 600; margin-bottom: 8px; color: var(--text);">${match.away}</p>
+                                    <input type="number" id="predAwayScore${matchId}" min="0" max="20" value="0" 
+                                           style="width: 70px; height: 60px; text-align: center; font-size: 1.5rem; font-weight: 700; background: rgba(0, 184, 148, 0.1); border: 2px solid var(--primary); border-radius: 10px; color: var(--text);">
+                                </div>
+                            </div>
+                            <button onclick="submitPrediction(${matchId})" class="update-btn">
+                                📊 Valider ma prédiction
+                            </button>
+                        </div>
+                    `}
+                    
+                    ${renderPredictionsStats(matchId, match)}
+                </div>
+            `;
+
+            return html;
+        }
+
+        function renderPredictionsStats(matchId, match) {
+            if (!leagueData.predictions || !leagueData.predictions[matchId]) {
+                return '';
+            }
+
+            const predictions = leagueData.predictions[matchId];
+            const predictionsList = Object.values(predictions);
+            
+            if (predictionsList.length === 0) {
+                return '';
+            }
+
+            // Calculer les statistiques
+            const totalPredictions = predictionsList.length;
+            const homeWins = predictionsList.filter(p => p.homeScore > p.awayScore).length;
+            const draws = predictionsList.filter(p => p.homeScore === p.awayScore).length;
+            const awayWins = predictionsList.filter(p => p.homeScore < p.awayScore).length;
+
+            const homePercent = Math.round((homeWins / totalPredictions) * 100);
+            const drawPercent = Math.round((draws / totalPredictions) * 100);
+            const awayPercent = Math.round((awayWins / totalPredictions) * 100);
+
+            return `
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <h4 style="color: var(--secondary); margin-bottom: 15px; font-size: 1rem; text-align: center;">
+                        📊 ${totalPredictions} prédiction(s) enregistrée(s)
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center;">
+                        <div style="background: rgba(0, 184, 148, 0.1); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 5px;">Victoire ${match.home}</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${homePercent}%</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">${homeWins} vote(s)</div>
+                        </div>
+                        <div style="background: rgba(253, 203, 110, 0.1); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 5px;">Match Nul</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #fdcb6e;">${drawPercent}%</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">${draws} vote(s)</div>
+                        </div>
+                        <div style="background: rgba(0, 184, 148, 0.1); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 5px;">Victoire ${match.away}</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${awayPercent}%</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">${awayWins} vote(s)</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.submitPrediction = async function(matchId) {
+            const homeScore = parseInt(document.getElementById(`predHomeScore${matchId}`).value);
+            const awayScore = parseInt(document.getElementById(`predAwayScore${matchId}`).value);
+
+            if (isNaN(homeScore) || isNaN(awayScore) || homeScore < 0 || awayScore < 0) {
+                showAlert('⚠️ Veuillez entrer des scores valides', 'error');
+                return;
+            }
+
+            if (!leagueData.predictions) {
+                leagueData.predictions = {};
+            }
+            if (!leagueData.predictions[matchId]) {
+                leagueData.predictions[matchId] = {};
+            }
+
+            const visitorId = getVisitorId();
+            leagueData.predictions[matchId][visitorId] = {
+                homeScore: homeScore,
+                awayScore: awayScore,
+                timestamp: Date.now()
+            };
+
+            await saveToDatabase();
+            showAlert('✅ Prédiction enregistrée !', 'success');
+            openMatchModal(matchId);
+        };
+
+        window.changePrediction = function(matchId) {
+            const visitorId = getVisitorId();
+            if (leagueData.predictions && leagueData.predictions[matchId]) {
+                delete leagueData.predictions[matchId][visitorId];
+            }
+            openMatchModal(matchId);
         };
 
         window.closeMatchModal = function() {
@@ -3907,7 +4052,7 @@
                             <input type="text" 
                                    id="scorers${match.id}" 
                                    value="${scorers.join(', ')}"
-                                   placeholder="Ex: Ahmed 23', Mohamed 45'"
+                                   placeholder="Nom Minute'"
                                    style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"
                                    onchange="window.updateMatchDetail(${match.id}, 'scorers', this.value)">
                         </div>
@@ -3916,7 +4061,7 @@
                             <input type="text" 
                                    id="assists${match.id}" 
                                    value="${assists.join(', ')}"
-                                   placeholder="Ex: Youssef 23', Ali 45'"
+                                   placeholder="Nom Minute'"
                                    style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"
                                    onchange="window.updateMatchDetail(${match.id}, 'assists', this.value)">
                         </div>
@@ -3926,7 +4071,7 @@
                                 <input type="text" 
                                        id="yellowCards${match.id}" 
                                        value="${yellowCards.join(', ')}"
-                                       placeholder="Ex: Hassan 30'"
+                                       placeholder="Nom Minute'"
                                        style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(253, 203, 110, 0.1); border: 1px solid #fdcb6e; border-radius: 8px; color: var(--text);"
                                        onchange="window.updateMatchDetail(${match.id}, 'yellowCards', this.value)">
                             </div>
@@ -3935,13 +4080,13 @@
                                 <input type="text" 
                                        id="redCards${match.id}" 
                                        value="${redCards.join(', ')}"
-                                       placeholder="Ex: Omar 75'"
+                                       placeholder="Nom Minute'"
                                        style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(255, 71, 87, 0.1); border: 1px solid var(--accent); border-radius: 8px; color: var(--text);"
                                        onchange="window.updateMatchDetail(${match.id}, 'redCards', this.value)">
                             </div>
                         </div>
                         <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 8px;">
-                            Format: Nom Minute' (Ex: Ahmed 23', Mohamed 45')
+                            Format: Nom Minute' (séparez par des virgules)
                         </div>
                     `;
 
@@ -4210,12 +4355,14 @@
                 leagueData.initialized = true;
                 leagueData.comments = {};
                 leagueData.votes = { tournament: {}, matches: {} };
+                leagueData.predictions = {};
                 leagueData.notifications = [];
                 await saveToDatabase();
             } else {
                 ensureTeamsExist();
                 if (!leagueData.comments) leagueData.comments = {};
                 if (!leagueData.votes) leagueData.votes = { tournament: {}, matches: {} };
+                if (!leagueData.predictions) leagueData.predictions = {};
                 if (!leagueData.notifications) leagueData.notifications = [];
                 calculateStandings();
             }
