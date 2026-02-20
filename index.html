@@ -2627,6 +2627,9 @@
                         homeScore: null,
                         awayScore: null,
                         scorers: [],
+                        assists: [],
+                        yellowCards: [],
+                        redCards: [],
                         date: null,
                         matchType: 'Aller',
                         stage: 'group',
@@ -2642,6 +2645,9 @@
                         homeScore: null,
                         awayScore: null,
                         scorers: [],
+                        assists: [],
+                        yellowCards: [],
+                        redCards: [],
                         date: null,
                         matchType: 'Retour',
                         stage: 'group',
@@ -3349,6 +3355,65 @@
                 </div>
             `;
 
+            // Match Details (if finished)
+            if (isFinished) {
+                html += `
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                        <h3 style="color: var(--primary); margin-bottom: 15px; font-size: 1.3rem;">📊 Détails du Match</h3>
+                        
+                        ${(match.scorers && match.scorers.length > 0) ? `
+                            <div style="margin-bottom: 15px;">
+                                <h4 style="color: var(--secondary); margin-bottom: 10px; font-size: 1.1rem;">⚽ Buteurs</h4>
+                                <div style="background: rgba(0, 184, 148, 0.1); padding: 12px; border-radius: 8px;">
+                                    ${match.scorers.map(scorer => `
+                                        <div style="padding: 5px 0; color: var(--text);">▸ ${scorer}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${(match.assists && match.assists.length > 0) ? `
+                            <div style="margin-bottom: 15px;">
+                                <h4 style="color: var(--secondary); margin-bottom: 10px; font-size: 1.1rem;">🎯 Passes Décisives</h4>
+                                <div style="background: rgba(0, 184, 148, 0.1); padding: 12px; border-radius: 8px;">
+                                    ${match.assists.map(assist => `
+                                        <div style="padding: 5px 0; color: var(--text);">▸ ${assist}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${(match.yellowCards && match.yellowCards.length > 0) ? `
+                            <div style="margin-bottom: 15px;">
+                                <h4 style="color: #fdcb6e; margin-bottom: 10px; font-size: 1.1rem;">🟨 Cartons Jaunes</h4>
+                                <div style="background: rgba(253, 203, 110, 0.1); padding: 12px; border-radius: 8px;">
+                                    ${match.yellowCards.map(card => `
+                                        <div style="padding: 5px 0; color: var(--text);">▸ ${card}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${(match.redCards && match.redCards.length > 0) ? `
+                            <div style="margin-bottom: 15px;">
+                                <h4 style="color: var(--accent); margin-bottom: 10px; font-size: 1.1rem;">🟥 Cartons Rouges</h4>
+                                <div style="background: rgba(255, 71, 87, 0.1); padding: 12px; border-radius: 8px;">
+                                    ${match.redCards.map(card => `
+                                        <div style="padding: 5px 0; color: var(--text);">▸ ${card}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${!match.scorers && !match.assists && !match.yellowCards && !match.redCards ? `
+                            <p style="text-align: center; color: var(--text-dim); padding: 20px;">
+                                Aucun détail disponible pour ce match.
+                            </p>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
             // Comments Section
             html += renderMatchComments(matchId);
 
@@ -3635,9 +3700,13 @@
             if (!leagueData.votes) {
                 leagueData.votes = { tournament: {}, matches: {} };
             }
+            
+            if (!leagueData.votes.tournament) {
+                leagueData.votes.tournament = {};
+            }
 
             const visitorId = getVisitorId();
-            const hasVoted = leagueData.votes.tournament[visitorId] !== undefined;
+            const hasVoted = leagueData.votes.tournament && leagueData.votes.tournament[visitorId] !== undefined;
 
             let html = '';
             let allPlayers = [];
@@ -3793,7 +3862,9 @@
                     const dateStr = date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
                     
                     const scorers = match.scorers || [];
-                    const scorersText = scorers.length > 0 ? scorers.join(', ') : 'Aucun buteur';
+                    const assists = match.assists || [];
+                    const yellowCards = match.yellowCards || [];
+                    const redCards = match.redCards || [];
                     
                     matchDiv.innerHTML = `
                         <label>${dateStr} - ${match.home} vs ${match.away} (${match.matchType || 'Aller'})</label>
@@ -3805,16 +3876,45 @@
                                    onchange="window.updateScore(${match.id}, 'away', this.value)">
                         </div>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.85rem; color: var(--text-dim);">Buteurs (séparés par virgule):</label>
+                            <label style="font-size: 0.85rem; color: var(--text-dim);">⚽ Buteurs (séparés par virgule):</label>
                             <input type="text" 
                                    id="scorers${match.id}" 
                                    value="${scorers.join(', ')}"
                                    placeholder="Ex: Ahmed 23', Mohamed 45'"
                                    style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"
-                                   onchange="window.updateScorers(${match.id}, this.value)">
-                            <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 5px;">
-                                Format: Nom Minute', Nom Minute' (Ex: Ahmed 23', Mohamed 45')
+                                   onchange="window.updateMatchDetail(${match.id}, 'scorers', this.value)">
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 0.85rem; color: var(--text-dim);">🎯 Passes Décisives (séparés par virgule):</label>
+                            <input type="text" 
+                                   id="assists${match.id}" 
+                                   value="${assists.join(', ')}"
+                                   placeholder="Ex: Youssef 23', Ali 45'"
+                                   style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"
+                                   onchange="window.updateMatchDetail(${match.id}, 'assists', this.value)">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                            <div>
+                                <label style="font-size: 0.85rem; color: #fdcb6e;">🟨 Cartons Jaunes:</label>
+                                <input type="text" 
+                                       id="yellowCards${match.id}" 
+                                       value="${yellowCards.join(', ')}"
+                                       placeholder="Ex: Hassan 30'"
+                                       style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(253, 203, 110, 0.1); border: 1px solid #fdcb6e; border-radius: 8px; color: var(--text);"
+                                       onchange="window.updateMatchDetail(${match.id}, 'yellowCards', this.value)">
                             </div>
+                            <div>
+                                <label style="font-size: 0.85rem; color: var(--accent);">🟥 Cartons Rouges:</label>
+                                <input type="text" 
+                                       id="redCards${match.id}" 
+                                       value="${redCards.join(', ')}"
+                                       placeholder="Ex: Omar 75'"
+                                       style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(255, 71, 87, 0.1); border: 1px solid var(--accent); border-radius: 8px; color: var(--text);"
+                                       onchange="window.updateMatchDetail(${match.id}, 'redCards', this.value)">
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 8px;">
+                            Format: Nom Minute' (Ex: Ahmed 23', Mohamed 45')
                         </div>
                     `;
 
@@ -3826,14 +3926,14 @@
             updateNotificationMatchSelect();
         }
 
-        window.updateScorers = async function(matchId, value) {
+        window.updateMatchDetail = async function(matchId, field, value) {
             if (!isAdmin) return;
             const match = leagueData.matches.find(m => m.id === matchId);
             if (match) {
-                const scorersArray = value.split(',').map(s => s.trim()).filter(s => s !== '');
-                match.scorers = scorersArray;
+                const valuesArray = value.split(',').map(s => s.trim()).filter(s => s !== '');
+                match[field] = valuesArray;
                 await saveToDatabase();
-                showAlert('✅ Buteurs mis à jour!', 'success');
+                showAlert(`✅ ${field === 'scorers' ? 'Buteurs' : field === 'assists' ? 'Passes' : field === 'yellowCards' ? 'Cartons jaunes' : 'Cartons rouges'} mis à jour!`, 'success');
             }
         };
 
@@ -4103,10 +4203,8 @@
             // Enregistrer le Service Worker immédiatement
             await registerServiceWorker();
             
-            // Afficher la bannière de notification après 1 seconde
-            setTimeout(() => {
-                showNotificationBanner();
-            }, 1000);
+            // Afficher la bannière de notification IMMÉDIATEMENT
+            showNotificationBanner();
             
             showLoading(false);
 
