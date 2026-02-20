@@ -1655,6 +1655,15 @@
                 <span class="info-badge">🏆 3 Groupes</span>
                 <span class="info-badge">🔄 Aller-Retour</span>
             </div>
+            <div style="margin-top: 20px;">
+                <a href="https://t.me/gdgsr_ramadan_bot" target="_blank" 
+                   style="display: inline-block; background: linear-gradient(135deg, #0088cc 0%, #005f99 100%); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3); transition: all 0.3s ease; font-size: 0.95rem;">
+                    📱 S'abonner au Bot Telegram
+                </a>
+                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 8px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    Recevez les buts, scores et actualités en temps réel sur Telegram (fonctionne sur iPhone ✅)
+                </div>
+            </div>
         </header>
 
         <nav>
@@ -3313,15 +3322,20 @@
                 let html = `<h3>${date.toLocaleDateString('fr-FR', options)}</h3>`;
 
                 matchesByDate[dateKey].forEach(match => {
-                    const score = match.homeScore !== null ? 
+                    const isFinished = match.homeScore !== null && match.awayScore !== null;
+                    const score = isFinished ? 
                         `${match.homeScore} - ${match.awayScore}` : 
                         'vs';
                     
                     const matchTypeDisplay = match.matchType ? `<span class="match-type-badge">${match.matchType}</span>` : '';
                     
+                    // Ajouter badge prédiction pour matchs à venir
+                    const predictionBadge = !isFinished ? `<span class="match-type-badge" style="background: rgba(253, 203, 110, 0.2); color: #fdcb6e; border-color: #fdcb6e;">🔮 Prédire</span>` : '';
+                    
                     html += `<div class="match" onclick="openMatchModal(${match.id})">
                         <div class="match-header">
                             ${matchTypeDisplay}
+                            ${predictionBadge}
                             <span class="match-time">${match.time}</span>
                         </div>
                         <div class="match-teams">
