@@ -1050,6 +1050,18 @@
             background: rgba(0, 184, 148, 0.2);
             cursor: default;
         }
+        
+        .vote-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(100, 100, 100, 0.1);
+        }
+        
+        .vote-option.disabled:hover {
+            transform: none;
+            border-color: transparent;
+            box-shadow: none;
+        }
 
         .player-name {
             font-weight: 700;
@@ -2051,7 +2063,7 @@
                     try {
                         console.log('📱 Obtention du token FCM...');
                         const token = await getToken(messaging, {
-                            vapidKey: 'BCEVc8GGEEtzi8FkKYwU0aXT59Zk0msr7rnsrgsNJR0wWW_-IwIAtD3eaUYXYUMRyjBeDym8Jghq8_xK-Jls2SI', // Remplacez par votre clé VAPID
+                            vapidKey: 'VOTRE_VAPID_KEY', // Remplacez par votre clé VAPID
                             serviceWorkerRegistration: registration
                         });
                         
@@ -3876,6 +3888,11 @@
 
         // Tournament-wide voting
         function renderVotingSection() {
+            // Initialiser l'état du vote s'il n'existe pas
+            if (leagueData.votingEnabled === undefined) {
+                leagueData.votingEnabled = true; // Par défaut activé
+            }
+            
             renderTournamentPlayerVoting();
         }
 
@@ -3890,9 +3907,31 @@
             if (!leagueData.votes.tournament) {
                 leagueData.votes.tournament = {};
             }
+            
+            if (leagueData.votingEnabled === undefined) {
+                leagueData.votingEnabled = true;
+            }
 
             const visitorId = getVisitorId();
             const hasVoted = leagueData.votes.tournament && leagueData.votes.tournament[visitorId] !== undefined;
+            
+            // Bouton admin pour activer/désactiver le vote
+            let adminControls = '';
+            if (isAdmin) {
+                adminControls = `
+                    <div style="background: rgba(255, 71, 87, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 2px solid var(--accent);">
+                        <h3 style="color: var(--accent); margin-bottom: 10px;">🔧 Contrôles Admin</h3>
+                        <button onclick="toggleVoting()" class="update-btn" style="background: ${leagueData.votingEnabled ? 'var(--accent)' : 'var(--primary)'};">
+                            ${leagueData.votingEnabled ? '🔴 Désactiver le Vote' : '🟢 Activer le Vote'}
+                        </button>
+                        <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 10px;">
+                            État actuel : ${leagueData.votingEnabled ? '✅ Vote ACTIVÉ' : '❌ Vote DÉSACTIVÉ'}
+                        </p>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = adminControls;
 
             let html = '';
             let allPlayers = [];
@@ -3905,21 +3944,54 @@
                     }
                 });
             });
-
-            allPlayers.forEach(player => {
-                const votes = Object.values(leagueData.votes.tournament).filter(v => v === `${player.team}:${player.idx}`).length;
-                const isVoted = hasVoted && leagueData.votes.tournament[visitorId] === `${player.team}:${player.idx}`;
-
+            
+            // Message si le vote est désactivé
+            if (!leagueData.votingEnabled && !isAdmin && !hasVoted) {
                 html += `
-                    <div class="vote-option ${isVoted ? 'voted' : ''}" onclick="${hasVoted ? '' : `selectTournamentPlayer('${player.team}', ${player.idx})`}">
-                        <div class="player-name">${player.name}</div>
-                        <div class="player-team">${player.team}</div>
-                        <div class="vote-count">⭐ ${votes} votes</div>
+                    <div style="text-align: center; padding: 40px; background: rgba(255, 71, 87, 0.1); border-radius: 12px; margin: 20px 0;">
+                        <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 10px;">🔒 Vote Fermé</h3>
+                        <p style="color: var(--text-dim);">Les votes pour le meilleur joueur du tournoi sont actuellement fermés.</p>
                     </div>
                 `;
+            } else {
+
+            Object.keys(leagueData.teams).forEach(teamName => {
+                const players = leagueData.teams[teamName].players;
+                players.forEach((player, idx) => {
+                    if (player.trim() !== '') {
+                        allPlayers.push({ name: player, team: teamName, idx: idx });
+                    }
+                });
             });
 
-            container.innerHTML = html;
+            }
+            
+            // Message si le vote est désactivé
+            if (!leagueData.votingEnabled && !isAdmin && !hasVoted) {
+                html += `
+                    <div style="text-align: center; padding: 40px; background: rgba(255, 71, 87, 0.1); border-radius: 12px; margin: 20px 0;">
+                        <h3 style="color: var(--accent); font-size: 1.5rem; margin-bottom: 10px;">🔒 Vote Fermé</h3>
+                        <p style="color: var(--text-dim);">Les votes pour le meilleur joueur du tournoi sont actuellement fermés.</p>
+                    </div>
+                `;
+            } else {
+                allPlayers.forEach(player => {
+                    const votes = Object.values(leagueData.votes.tournament).filter(v => v === `${player.team}:${player.idx}`).length;
+                    const isVoted = hasVoted && leagueData.votes.tournament[visitorId] === `${player.team}:${player.idx}`;
+                    
+                    const canVote = leagueData.votingEnabled && !hasVoted;
+
+                    html += `
+                        <div class="vote-option ${isVoted ? 'voted' : ''} ${!canVote && !isVoted ? 'disabled' : ''}" onclick="${canVote ? `selectTournamentPlayer('${player.team}', ${player.idx})` : ''}">
+                            <div class="player-name">${player.name}</div>
+                            <div class="player-team">${player.team}</div>
+                            <div class="vote-count">⭐ ${votes} votes</div>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML += html;
 
             // Show results
             const voteCounts = {};
@@ -3961,6 +4033,11 @@
         }
 
         window.selectTournamentPlayer = function(team, playerIdx) {
+            if (!leagueData.votingEnabled) {
+                showAlert('🔒 Les votes sont actuellement fermés', 'error');
+                return;
+            }
+            
             window.selectedTournamentPlayer = `${team}:${playerIdx}`;
             
             document.querySelectorAll('#votePlayerTournament .vote-option').forEach(opt => {
@@ -3968,8 +4045,30 @@
             });
             event.target.closest('.vote-option').classList.add('selected');
         };
+        
+        window.toggleVoting = async function() {
+            if (!isAdmin) {
+                showAlert('⛔ Accès refusé', 'error');
+                return;
+            }
+            
+            leagueData.votingEnabled = !leagueData.votingEnabled;
+            await saveToDatabase();
+            
+            showAlert(
+                leagueData.votingEnabled ? '✅ Vote activé !' : '🔴 Vote désactivé !',
+                leagueData.votingEnabled ? 'success' : 'error'
+            );
+            
+            renderVotingSection();
+        };
 
         window.submitTournamentVote = async function() {
+            if (!leagueData.votingEnabled) {
+                showAlert('🔒 Les votes sont actuellement fermés', 'error');
+                return;
+            }
+            
             if (!window.selectedTournamentPlayer) {
                 showAlert('⚠️ Veuillez sélectionner un joueur!', 'error');
                 return;
