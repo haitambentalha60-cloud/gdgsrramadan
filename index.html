@@ -1740,18 +1740,26 @@
                 🏆 Phase Finale
             </h2>
             <div style="max-width: 900px; margin: 0 auto; display: grid; gap: 30px;">
+                <!-- MATCH DE BARRAGE -->
+                <div class="group">
+                    <h3 style="color: var(--accent);">⚔️ Match de Barrage (4ème place)</h3>
+                    <div id="barrage-match" style="margin-top: 20px;">
+                        <!-- Le match de barrage sera affiché ici par updateKnockoutStage() -->
+                    </div>
+                </div>
+                
                 <div class="group">
                     <h3 style="color: var(--primary);">Demi-Finales</h3>
                     <div style="display: grid; gap: 15px; margin-top: 20px;">
-                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;" onclick="openMatchModal('semi-1')" style="cursor: pointer;">
                             <div style="font-weight: 600; margin-bottom: 10px; color: var(--secondary);">DF1</div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span id="sf1-team1">1er Groupe A</span>
                                 <span style="color: var(--text-dim);">vs</span>
-                                <span id="sf1-team2">Meilleur 2e</span>
+                                <span id="sf1-team2">Vainqueur Barrage</span>
                             </div>
                         </div>
-                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;" onclick="openMatchModal('semi-2')" style="cursor: pointer;">
                             <div style="font-weight: 600; margin-bottom: 10px; color: var(--secondary);">DF2</div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span id="sf2-team1">1er Groupe B</span>
@@ -1763,7 +1771,7 @@
                 </div>
                 <div class="group">
                     <h3 style="color: var(--accent);">🏆 Finale</h3>
-                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-top: 20px;" onclick="openMatchModal('final')" style="cursor: pointer;">
                         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; font-weight: 600;">
                             <span id="final-team1">Vainqueur DF1</span>
                             <span style="color: var(--secondary);">vs</span>
@@ -2918,10 +2926,13 @@
             const groupBWinner = leagueData.standings['Groupe B']?.[0]?.name || '1er Groupe B';
             const groupCWinner = leagueData.standings['Groupe C']?.[0]?.name || '1er Groupe C';
             
+            // RÉCUPÉRER LES 2 MEILLEURS 2èmes POUR LE BARRAGE
             const secondPlaces = [];
             Object.keys(leagueData.standings).forEach(group => {
                 if (leagueData.standings[group].length >= 2) {
-                    secondPlaces.push(leagueData.standings[group][1]);
+                    const runner = leagueData.standings[group][1];
+                    runner.groupName = group;
+                    secondPlaces.push(runner);
                 }
             });
             
@@ -2932,16 +2943,165 @@
             });
 
             const bestSecond = secondPlaces[0]?.name || 'Meilleur 2e';
-
+            const secondBestSecond = secondPlaces[1]?.name || '2ème Meilleur 2e';
+            
+            // CRÉER LE MATCH DE BARRAGE s'il n'existe pas
+            let barrageMatch = leagueData.matches.find(m => m.id === 'barrage-1');
+            if (!barrageMatch) {
+                barrageMatch = {
+                    id: 'barrage-1',
+                    stage: 'barrage',
+                    home: bestSecond,
+                    away: secondBestSecond,
+                    homeScore: null,
+                    awayScore: null,
+                    scorers: [],
+                    assists: [],
+                    yellowCards: [],
+                    redCards: [],
+                    date: new Date('2026-03-15T14:00:00').toISOString(),
+                    time: '14:00',
+                    matchType: 'Barrage 4ème place',
+                    group: 'Barrage',
+                    referee: ''
+                };
+                leagueData.matches.push(barrageMatch);
+            } else {
+                // Mettre à jour les équipes
+                barrageMatch.home = bestSecond;
+                barrageMatch.away = secondBestSecond;
+            }
+            
+            // Déterminer le vainqueur du barrage
+            let barrageWinner = 'Vainqueur Barrage';
+            if (barrageMatch.homeScore !== null && barrageMatch.awayScore !== null) {
+                if (barrageMatch.homeScore > barrageMatch.awayScore) {
+                    barrageWinner = barrageMatch.home;
+                } else if (barrageMatch.awayScore > barrageMatch.homeScore) {
+                    barrageWinner = barrageMatch.away;
+                } else {
+                    barrageWinner = 'Vainqueur Barrage (prolongations)';
+                }
+            }
+            
+            // CRÉER LES DEMI-FINALES
+            let semi1 = leagueData.matches.find(m => m.id === 'semi-1');
+            if (!semi1) {
+                semi1 = {
+                    id: 'semi-1',
+                    stage: 'semi',
+                    home: groupAWinner,
+                    away: barrageWinner,
+                    homeScore: null,
+                    awayScore: null,
+                    scorers: [],
+                    assists: [],
+                    yellowCards: [],
+                    redCards: [],
+                    date: new Date('2026-03-18T15:00:00').toISOString(),
+                    time: '15:00',
+                    matchType: 'Demi-finale 1',
+                    group: 'Demi-finales',
+                    referee: ''
+                };
+                leagueData.matches.push(semi1);
+            } else {
+                semi1.home = groupAWinner;
+                semi1.away = barrageWinner;
+            }
+            
+            let semi2 = leagueData.matches.find(m => m.id === 'semi-2');
+            if (!semi2) {
+                semi2 = {
+                    id: 'semi-2',
+                    stage: 'semi',
+                    home: groupBWinner,
+                    away: groupCWinner,
+                    homeScore: null,
+                    awayScore: null,
+                    scorers: [],
+                    assists: [],
+                    yellowCards: [],
+                    redCards: [],
+                    date: new Date('2026-03-18T17:00:00').toISOString(),
+                    time: '17:00',
+                    matchType: 'Demi-finale 2',
+                    group: 'Demi-finales',
+                    referee: ''
+                };
+                leagueData.matches.push(semi2);
+            } else {
+                semi2.home = groupBWinner;
+                semi2.away = groupCWinner;
+            }
+            
+            // Déterminer les vainqueurs des demis
+            let semi1Winner = 'Vainqueur Demi 1';
+            if (semi1.homeScore !== null && semi1.awayScore !== null) {
+                semi1Winner = semi1.homeScore > semi1.awayScore ? semi1.home : semi1.away;
+            }
+            
+            let semi2Winner = 'Vainqueur Demi 2';
+            if (semi2.homeScore !== null && semi2.awayScore !== null) {
+                semi2Winner = semi2.homeScore > semi2.awayScore ? semi2.home : semi2.away;
+            }
+            
+            // CRÉER LA FINALE
+            let final = leagueData.matches.find(m => m.id === 'final');
+            if (!final) {
+                final = {
+                    id: 'final',
+                    stage: 'final',
+                    home: semi1Winner,
+                    away: semi2Winner,
+                    homeScore: null,
+                    awayScore: null,
+                    scorers: [],
+                    assists: [],
+                    yellowCards: [],
+                    redCards: [],
+                    date: new Date('2026-03-20T16:00:00').toISOString(),
+                    time: '16:00',
+                    matchType: 'FINALE',
+                    group: 'Finale',
+                    referee: ''
+                };
+                leagueData.matches.push(final);
+            } else {
+                final.home = semi1Winner;
+                final.away = semi2Winner;
+            }
+            
+            // METTRE À JOUR L'AFFICHAGE HTML
             const sf1team1 = document.getElementById('sf1-team1');
             const sf1team2 = document.getElementById('sf1-team2');
             const sf2team1 = document.getElementById('sf2-team1');
             const sf2team2 = document.getElementById('sf2-team2');
 
             if (sf1team1) sf1team1.textContent = groupAWinner;
-            if (sf1team2) sf1team2.textContent = bestSecond;
+            if (sf1team2) sf1team2.textContent = barrageWinner;
             if (sf2team1) sf2team1.textContent = groupBWinner;
             if (sf2team2) sf2team2.textContent = groupCWinner;
+            
+            // Afficher aussi le match de barrage
+            const barrageContainer = document.getElementById('barrage-match');
+            if (barrageContainer) {
+                barrageContainer.innerHTML = `
+                    <div class="match" onclick="openMatchModal('barrage-1')" style="cursor: pointer; background: rgba(255, 71, 87, 0.1); border: 2px solid var(--accent); padding: 20px; border-radius: 12px;">
+                        <h4 style="color: var(--accent); text-align: center; margin-bottom: 15px;">⚔️ MATCH DE BARRAGE (4ème place)</h4>
+                        <div class="match-teams" style="font-size: 1.2rem;">
+                            <span class="team-home">${barrageMatch.home}</span>
+                            <span class="match-vs">${barrageMatch.homeScore !== null ? `${barrageMatch.homeScore} - ${barrageMatch.awayScore}` : 'vs'}</span>
+                            <span class="team-away">${barrageMatch.away}</span>
+                        </div>
+                        <p style="text-align: center; color: var(--text-dim); margin-top: 10px; font-size: 0.9rem;">
+                            Le vainqueur affrontera le ${groupAWinner} en demi-finale
+                        </p>
+                    </div>
+                `;
+            }
+            
+            saveToDatabase();
         }
 
         function renderNews() {
@@ -3477,7 +3637,10 @@
             
             // Predictions Section (only for upcoming matches)
             if (!isFinished) {
+                console.log('🔮 Affichage prédictions pour match', matchId, 'isFinished:', isFinished);
                 html += renderMatchPredictions(matchId, match);
+            } else {
+                console.log('❌ Pas de prédictions (match terminé)', matchId, 'homeScore:', match.homeScore, 'awayScore:', match.awayScore);
             }
 
             modalContent.innerHTML = html;
@@ -4138,7 +4301,14 @@
             const container = document.getElementById('adminMatches');
             container.innerHTML = '';
 
-            leagueData.matches.forEach(match => {
+            // TRIER LES MATCHS PAR DATE
+            const sortedMatches = [...leagueData.matches].sort((a, b) => {
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return new Date(a.date) - new Date(b.date);
+            });
+
+            sortedMatches.forEach(match => {
                 if (match.date) {
                     const matchDiv = document.createElement('div');
                     matchDiv.className = 'score-match';
@@ -4151,8 +4321,36 @@
                     const yellowCards = match.yellowCards || [];
                     const redCards = match.redCards || [];
                     
+                    // Identifier phase finale
+                    const isKnockout = match.stage === 'barrage' || match.stage === 'semi' || match.stage === 'final';
+                    const dateInputId = `matchDate${match.id}`;
+                    const timeInputId = `matchTime${match.id}`;
+                    const dateValue = date.toISOString().split('T')[0];
+                    const timeValue = date.toTimeString().slice(0, 5);
+                    
                     matchDiv.innerHTML = `
-                        <label>${dateStr} - ${match.home} vs ${match.away} (${match.matchType || 'Aller'})</label>
+                        <label style="font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span>${match.home} vs ${match.away}</span>
+                            ${isKnockout ? `<span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem;">${match.stage === 'barrage' ? '⚔️ BARRAGE' : match.stage === 'semi' ? '🏆 DEMI' : '🥇 FINALE'}</span>` : `<span style="color: var(--text-dim); font-size: 0.9rem;">(${match.matchType || 'Aller'})</span>`}
+                        </label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
+                            <div>
+                                <label style="font-size: 0.85rem; color: var(--text-dim);">📅 Date:</label>
+                                <input type="date" 
+                                       id="${dateInputId}" 
+                                       value="${dateValue}"
+                                       style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"
+                                       onchange="window.updateMatchDateTime(${match.id}, this.value, document.getElementById('${timeInputId}').value)">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.85rem; color: var(--text-dim);">🕐 Heure:</label>
+                                <input type="time" 
+                                       id="${timeInputId}" 
+                                       value="${timeValue}"
+                                       style="width: 100%; padding: 8px; margin-top: 5px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);"
+                                       onchange="window.updateMatchDateTime(${match.id}, document.getElementById('${dateInputId}').value, this.value)">
+                            </div>
+                        </div>
                         <div class="score-inputs">
                             <input type="number" min="0" value="${match.homeScore !== null ? match.homeScore : ''}" 
                                    onchange="window.updateScore(${match.id}, 'home', this.value)">
@@ -4219,6 +4417,19 @@
                 match[field] = valuesArray;
                 await saveToDatabase();
                 showAlert(`✅ ${field === 'scorers' ? 'Buteurs' : field === 'assists' ? 'Passes' : field === 'yellowCards' ? 'Cartons jaunes' : 'Cartons rouges'} mis à jour!`, 'success');
+            }
+        };
+        
+        window.updateMatchDateTime = async function(matchId, dateValue, timeValue) {
+            if (!isAdmin) return;
+            const match = leagueData.matches.find(m => m.id === matchId);
+            if (match) {
+                const newDateTime = new Date(`${dateValue}T${timeValue}:00`);
+                match.date = newDateTime.toISOString();
+                match.time = timeValue;
+                await saveToDatabase();
+                showAlert('✅ Date/heure mise à jour!', 'success');
+                renderAdmin();
             }
         };
 
