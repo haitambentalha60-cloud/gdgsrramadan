@@ -2071,7 +2071,7 @@
                     try {
                         console.log('📱 Obtention du token FCM...');
                         const token = await getToken(messaging, {
-                            vapidKey: 'VOTRE_VAPID_KEY', // Remplacez par votre clé VAPID
+                            vapidKey: 'BCEVc8GGEEtzi8FkKYwU0aXT59Zk0msr7rnsrgsNJR0wWW_-IwIAtD3eaUYXYUMRyjBeDym8Jghq8_xK-Jls2SI', // ⚠️ FIREBASE CONSOLE → Cloud Messaging → Web Push certificates → Generate key pair
                             serviceWorkerRegistration: registration
                         });
                         
@@ -2764,6 +2764,11 @@
             });
 
             leagueData.matches.forEach((match, index) => {
+                // IGNORER les matchs de phase finale (barrage, semi, finale) pour les classements
+                if (match.stage === 'barrage' || match.stage === 'semi' || match.stage === 'final') {
+                    return; // Skip knockout matches
+                }
+                
                 if (match.homeScore !== null && match.awayScore !== null) {
                     if (!leagueData.teams[match.home]) {
                         console.error(`❌ Équipe introuvable: ${match.home}`);
@@ -3494,7 +3499,7 @@
                 let html = `<h3>${date.toLocaleDateString('fr-FR', options)}</h3>`;
 
                 matchesByDate[dateKey].forEach(match => {
-                    const isFinished = match.homeScore !== null && match.awayScore !== null;
+                    const isFinished = match.homeScore != null && match.awayScore != null; // != null vérifie null ET undefined
                     const score = isFinished ? 
                         `${match.homeScore} - ${match.awayScore}` : 
                         'vs';
@@ -3541,7 +3546,7 @@
                 minute: '2-digit'
             });
 
-            const isFinished = match.homeScore !== null && match.awayScore !== null;
+            const isFinished = match.homeScore != null && match.awayScore != null; // != null vérifie null ET undefined
             
             let html = `
                 <div style="text-align: center; margin-bottom: 30px;">
