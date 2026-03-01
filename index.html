@@ -4538,6 +4538,8 @@
         function renderMatchMVPs() {
             const container = document.getElementById('matchMVPsTable');
             
+            console.log('🔍 renderMatchMVPs - isAdmin:', isAdmin); // DEBUG
+            
             if (!leagueData.matchMVPs) {
                 leagueData.matchMVPs = {};
             }
@@ -4545,6 +4547,7 @@
             // BOUTON ADMIN TOUJOURS EN HAUT
             let html = '';
             if (isAdmin) {
+                console.log('✅ Admin détecté - Affichage du bouton MVP'); // DEBUG
                 html = `
                     <div style="background: rgba(253, 203, 110, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--secondary);">
                         <button onclick="openMVPModal()" class="update-btn" style="width: 100%; font-size: 1.2rem; padding: 15px;">
@@ -4552,6 +4555,8 @@
                         </button>
                     </div>
                 `;
+            } else {
+                console.log('❌ Pas admin - Pas de bouton MVP'); // DEBUG
             }
             
             const mvpList = Object.entries(leagueData.matchMVPs).map(([matchId, mvpData]) => {
@@ -4628,6 +4633,8 @@
         function renderMercato() {
             const container = document.getElementById('mercatoTable');
             
+            console.log('🔍 renderMercato - isAdmin:', isAdmin); // DEBUG
+            
             if (!leagueData.mercato) {
                 leagueData.mercato = [];
             }
@@ -4635,6 +4642,7 @@
             // BOUTON ADMIN TOUJOURS EN HAUT
             let html = '';
             if (isAdmin) {
+                console.log('✅ Admin détecté - Affichage du bouton Mercato'); // DEBUG
                 html = `
                     <div style="background: rgba(0, 184, 148, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--primary);">
                         <button onclick="openMercatoModal()" class="update-btn" style="width: 100%; font-size: 1.2rem; padding: 15px;">
@@ -4642,6 +4650,8 @@
                         </button>
                     </div>
                 `;
+            } else {
+                console.log('❌ Pas admin - Pas de bouton Mercato'); // DEBUG
             }
             
             const sortedMercato = [...leagueData.mercato].sort((a, b) => b.timestamp - a.timestamp);
@@ -5201,6 +5211,7 @@
                 renderAdmin();
                 renderMatchManagement();
                 renderTeams();
+                renderStats(); // ← AJOUTÉ pour afficher les boutons admin
                 showAlert('Connecté en tant qu\'admin!', 'success');
             } else {
                 showAlert('Mot de passe incorrect!', 'error');
@@ -5213,6 +5224,7 @@
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('adminPassword').value = '';
             renderTeams();
+            renderStats(); // ← AJOUTÉ pour cacher les boutons admin
             showAlert('Déconnecté', 'success');
         };
 
