@@ -4363,8 +4363,7 @@
             
             // Convertir en array et trier
             const sortedScorers = Object.values(scorersCount)
-                .sort((a, b) => b.goals - a.goals)
-                .slice(0, 10); // Top 10
+                .sort((a, b) => b.goals - a.goals); // TOUS les buteurs
             
             if (sortedScorers.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 20px;">Aucun but marqué pour le moment</p>';
@@ -4426,8 +4425,7 @@
             });
             
             const sortedAssists = Object.values(assistsCount)
-                .sort((a, b) => b.assists - a.assists)
-                .slice(0, 10);
+                .sort((a, b) => b.assists - a.assists); // TOUS les passeurs
             
             if (sortedAssists.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 20px;">Aucune passe décisive pour le moment</p>';
@@ -4483,8 +4481,7 @@
             
             const sortedYellow = Object.entries(yellowCount)
                 .map(([name, count]) => ({ name, count }))
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 10);
+                .sort((a, b) => b.count - a.count); // TOUS les cartons jaunes
             
             if (sortedYellow.length === 0) {
                 yellowContainer.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 15px; font-size: 0.9rem;">Aucun carton jaune</p>';
@@ -4519,8 +4516,7 @@
             
             const sortedRed = Object.entries(redCount)
                 .map(([name, count]) => ({ name, count }))
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 10);
+                .sort((a, b) => b.count - a.count); // TOUS les cartons rouges
             
             if (sortedRed.length === 0) {
                 redContainer.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 15px; font-size: 0.9rem;">Aucun carton rouge</p>';
@@ -4546,6 +4542,18 @@
                 leagueData.matchMVPs = {};
             }
             
+            // BOUTON ADMIN TOUJOURS EN HAUT
+            let html = '';
+            if (isAdmin) {
+                html = `
+                    <div style="background: rgba(253, 203, 110, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--secondary);">
+                        <button onclick="openMVPModal()" class="update-btn" style="width: 100%; font-size: 1.2rem; padding: 15px;">
+                            ⭐ AJOUTER UN MVP
+                        </button>
+                    </div>
+                `;
+            }
+            
             const mvpList = Object.entries(leagueData.matchMVPs).map(([matchId, mvpData]) => {
                 const match = leagueData.matches.find(m => m.id == matchId);
                 return {
@@ -4562,7 +4570,7 @@
             });
             
             if (mvpList.length === 0) {
-                container.innerHTML = `
+                container.innerHTML = html + `
                     <p style="text-align: center; color: var(--text-dim); padding: 40px;">
                         Aucun MVP désigné pour le moment
                     </p>
@@ -4575,7 +4583,7 @@
                 return;
             }
             
-            let html = `
+            html += `
                 <div style="display: grid; gap: 15px;">
             `;
             
@@ -4624,10 +4632,22 @@
                 leagueData.mercato = [];
             }
             
+            // BOUTON ADMIN TOUJOURS EN HAUT
+            let html = '';
+            if (isAdmin) {
+                html = `
+                    <div style="background: rgba(0, 184, 148, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--primary);">
+                        <button onclick="openMercatoModal()" class="update-btn" style="width: 100%; font-size: 1.2rem; padding: 15px;">
+                            🔄 AJOUTER UN TRANSFERT
+                        </button>
+                    </div>
+                `;
+            }
+            
             const sortedMercato = [...leagueData.mercato].sort((a, b) => b.timestamp - a.timestamp);
             
             if (sortedMercato.length === 0) {
-                container.innerHTML = `
+                container.innerHTML = html + `
                     <p style="text-align: center; color: var(--text-dim); padding: 40px;">
                         Aucun transfert enregistré
                     </p>
@@ -4635,7 +4655,7 @@
                 return;
             }
             
-            let html = `
+            html += `
                 <div style="display: grid; gap: 15px;">
             `;
             
