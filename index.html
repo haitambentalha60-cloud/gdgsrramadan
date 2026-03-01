@@ -1683,6 +1683,7 @@
             <button class="nav-btn" onclick="showSection('fixtures')">Calendrier</button>
             <button class="nav-btn" onclick="showSection('news')">Actualités</button>
             <button class="nav-btn" onclick="showSection('teams')">Équipes</button>
+            <button class="nav-btn" onclick="showSection('stats')">📊 Stats</button>
             <button class="nav-btn" onclick="showSection('votes')">🏆 Votes</button>
             <button class="nav-btn" onclick="showSection('knockout')">Phase Finale</button>
             <button class="nav-btn" onclick="showSection('admin')">Admin</button>
@@ -1715,6 +1716,69 @@
 
         <div id="teams" class="section">
             <div class="teams-grid" id="teamsGrid"></div>
+        </div>
+
+        <!-- NEW STATS SECTION -->
+        <div id="stats" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                📊 Statistiques du Tournoi
+            </h2>
+            <div style="max-width: 1200px; margin: 0 auto; display: grid; gap: 30px;">
+                
+                <!-- 1. TOP SCORERS -->
+                <div class="group">
+                    <h3 style="color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                        <span>⚽</span>
+                        <span>Meilleurs Buteurs</span>
+                    </h3>
+                    <div id="topScorersTable" style="margin-top: 20px;"></div>
+                </div>
+                
+                <!-- 2. TOP ASSISTS -->
+                <div class="group">
+                    <h3 style="color: var(--secondary); display: flex; align-items: center; gap: 10px;">
+                        <span>🎯</span>
+                        <span>Meilleurs Passeurs</span>
+                    </h3>
+                    <div id="topAssistsTable" style="margin-top: 20px;"></div>
+                </div>
+                
+                <!-- 3. CARDS (YELLOW & RED) -->
+                <div class="group">
+                    <h3 style="color: var(--accent); display: flex; align-items: center; gap: 10px;">
+                        <span>🟨🟥</span>
+                        <span>Cartons</span>
+                    </h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                        <div>
+                            <h4 style="color: #fdcb6e; margin-bottom: 15px;">🟨 Cartons Jaunes</h4>
+                            <div id="yellowCardsTable"></div>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--accent); margin-bottom: 15px;">🟥 Cartons Rouges</h4>
+                            <div id="redCardsTable"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 4. MATCH MVPs -->
+                <div class="group">
+                    <h3 style="color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                        <span>⭐</span>
+                        <span>MVPs des Matchs</span>
+                    </h3>
+                    <div id="matchMVPsTable" style="margin-top: 20px;"></div>
+                </div>
+                
+                <!-- 5. MERCATO / TRANSFERS -->
+                <div class="group">
+                    <h3 style="color: var(--secondary); display: flex; align-items: center; gap: 10px;">
+                        <span>🔄</span>
+                        <span>Mercato & Transferts</span>
+                    </h3>
+                    <div id="mercatoTable" style="margin-top: 20px;"></div>
+                </div>
+            </div>
         </div>
 
         <!-- NEW VOTES SECTION -->
@@ -3307,6 +3371,502 @@
             showAlert('✅ Actualité supprimée!', 'success');
         };
 
+        // ========================================
+        // STATISTICS FUNCTIONS
+        // ========================================
+        
+        function renderStats() {
+            renderTopScorers();
+            renderTopAssists();
+            renderCards();
+            renderMatchMVPs();
+            renderMercato();
+        }
+        
+        function renderTopScorers() {
+            const container = document.getElementById('topScorersTable');
+            if (!container) return;
+            
+            const scorerStats = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.scorers && match.scorers.length > 0) {
+                    match.scorers.forEach(scorer => {
+                        const parts = scorer.split(' ');
+                        const name = parts.slice(0, -1).join(' ').trim();
+                        
+                        if (name) {
+                            if (!scorerStats[name]) {
+                                scorerStats[name] = { goals: 0, team: match.home };
+                            }
+                            scorerStats[name].goals++;
+                            
+                            // Déterminer l'équipe
+                            if (Object.keys(leagueData.teams).some(team => 
+                                leagueData.teams[team].players.includes(name))) {
+                                const teamName = Object.keys(leagueData.teams).find(team => 
+                                    leagueData.teams[team].players.includes(name));
+                                scorerStats[name].team = teamName;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            const sortedScorers = Object.entries(scorerStats)
+                .sort((a, b) => b[1].goals - a[1].goals)
+                .slice(0, 10);
+            
+            if (sortedScorers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucun but marqué pour le moment</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: rgba(0, 184, 148, 0.1); border-bottom: 2px solid var(--primary);">
+                            <th style="padding: 15px; text-align: left; color: var(--primary);">#</th>
+                            <th style="padding: 15px; text-align: left; color: var(--primary);">Joueur</th>
+                            <th style="padding: 15px; text-align: left; color: var(--primary);">Équipe</th>
+                            <th style="padding: 15px; text-align: center; color: var(--primary);">Buts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedScorers.map(([name, data], index) => `
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 12px; color: var(--secondary); font-weight: 700;">${index + 1}</td>
+                                <td style="padding: 12px; color: var(--text); font-weight: 600;">${name}</td>
+                                <td style="padding: 12px; color: var(--text-dim);">${data.team}</td>
+                                <td style="padding: 12px; text-align: center; color: var(--primary); font-size: 1.2rem; font-weight: 700;">⚽ ${data.goals}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function renderTopAssists() {
+            const container = document.getElementById('topAssistsTable');
+            if (!container) return;
+            
+            const assistStats = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.assists && match.assists.length > 0) {
+                    match.assists.forEach(assister => {
+                        const parts = assister.split(' ');
+                        const name = parts.slice(0, -1).join(' ').trim();
+                        
+                        if (name) {
+                            if (!assistStats[name]) {
+                                assistStats[name] = { assists: 0, team: match.home };
+                            }
+                            assistStats[name].assists++;
+                            
+                            if (Object.keys(leagueData.teams).some(team => 
+                                leagueData.teams[team].players.includes(name))) {
+                                const teamName = Object.keys(leagueData.teams).find(team => 
+                                    leagueData.teams[team].players.includes(name));
+                                assistStats[name].team = teamName;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            const sortedAssisters = Object.entries(assistStats)
+                .sort((a, b) => b[1].assists - a[1].assists)
+                .slice(0, 10);
+            
+            if (sortedAssisters.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucune passe décisive pour le moment</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: rgba(253, 203, 110, 0.1); border-bottom: 2px solid var(--secondary);">
+                            <th style="padding: 15px; text-align: left; color: var(--secondary);">#</th>
+                            <th style="padding: 15px; text-align: left; color: var(--secondary);">Joueur</th>
+                            <th style="padding: 15px; text-align: left; color: var(--secondary);">Équipe</th>
+                            <th style="padding: 15px; text-align: center; color: var(--secondary);">Passes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedAssisters.map(([name, data], index) => `
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 12px; color: var(--secondary); font-weight: 700;">${index + 1}</td>
+                                <td style="padding: 12px; color: var(--text); font-weight: 600;">${name}</td>
+                                <td style="padding: 12px; color: var(--text-dim);">${data.team}</td>
+                                <td style="padding: 12px; text-align: center; color: var(--secondary); font-size: 1.2rem; font-weight: 700;">🎯 ${data.assists}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function renderCards() {
+            renderYellowCards();
+            renderRedCards();
+        }
+        
+        function renderYellowCards() {
+            const container = document.getElementById('yellowCardsTable');
+            if (!container) return;
+            
+            const yellowStats = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.yellowCards && match.yellowCards.length > 0) {
+                    match.yellowCards.forEach(card => {
+                        const parts = card.split(' ');
+                        const name = parts.slice(0, -1).join(' ').trim();
+                        
+                        if (name) {
+                            if (!yellowStats[name]) {
+                                yellowStats[name] = { count: 0, team: match.home };
+                            }
+                            yellowStats[name].count++;
+                            
+                            if (Object.keys(leagueData.teams).some(team => 
+                                leagueData.teams[team].players.includes(name))) {
+                                const teamName = Object.keys(leagueData.teams).find(team => 
+                                    leagueData.teams[team].players.includes(name));
+                                yellowStats[name].team = teamName;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            const sortedYellow = Object.entries(yellowStats)
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, 5);
+            
+            if (sortedYellow.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 0.9rem;">Aucun carton jaune</p>';
+                return;
+            }
+            
+            container.innerHTML = sortedYellow.map(([name, data], index) => `
+                <div style="background: rgba(253, 203, 110, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--text);">${name}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-dim);">${data.team}</div>
+                    </div>
+                    <div style="color: #fdcb6e; font-size: 1.3rem; font-weight: 700;">🟨 ${data.count}</div>
+                </div>
+            `).join('');
+        }
+        
+        function renderRedCards() {
+            const container = document.getElementById('redCardsTable');
+            if (!container) return;
+            
+            const redStats = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.redCards && match.redCards.length > 0) {
+                    match.redCards.forEach(card => {
+                        const parts = card.split(' ');
+                        const name = parts.slice(0, -1).join(' ').trim();
+                        
+                        if (name) {
+                            if (!redStats[name]) {
+                                redStats[name] = { count: 0, team: match.home };
+                            }
+                            redStats[name].count++;
+                            
+                            if (Object.keys(leagueData.teams).some(team => 
+                                leagueData.teams[team].players.includes(name))) {
+                                const teamName = Object.keys(leagueData.teams).find(team => 
+                                    leagueData.teams[team].players.includes(name));
+                                redStats[name].team = teamName;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            const sortedRed = Object.entries(redStats)
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, 5);
+            
+            if (sortedRed.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 0.9rem;">Aucun carton rouge</p>';
+                return;
+            }
+            
+            container.innerHTML = sortedRed.map(([name, data], index) => `
+                <div style="background: rgba(255, 71, 87, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--text);">${name}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-dim);">${data.team}</div>
+                    </div>
+                    <div style="color: var(--accent); font-size: 1.3rem; font-weight: 700;">🟥 ${data.count}</div>
+                </div>
+            `).join('');
+        }
+        
+        function renderMatchMVPs() {
+            const container = document.getElementById('matchMVPsTable');
+            if (!container) return;
+            
+            if (!leagueData.matchMVPs) {
+                leagueData.matchMVPs = [];
+            }
+            
+            if (leagueData.matchMVPs.length === 0) {
+                container.innerHTML = `
+                    <p style="text-align: center; color: var(--text-dim); padding: 40px;">
+                        Aucun MVP désigné pour le moment
+                    </p>
+                `;
+                return;
+            }
+            
+            const sortedMVPs = [...leagueData.matchMVPs].sort((a, b) => b.timestamp - a.timestamp);
+            
+            container.innerHTML = `
+                <div style="display: grid; gap: 15px;">
+                    ${sortedMVPs.map((mvp, index) => {
+                        const match = leagueData.matches.find(m => m.id == mvp.matchId);
+                        const matchInfo = match ? `${match.home} vs ${match.away}` : 'Match inconnu';
+                        
+                        return `
+                            <div style="background: rgba(253, 203, 110, 0.1); padding: 20px; border-radius: 12px; border: 2px solid var(--secondary); position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div>
+                                        <div style="font-size: 1.3rem; font-weight: 700; color: var(--secondary); margin-bottom: 5px;">
+                                            ⭐ ${mvp.playerName}
+                                        </div>
+                                        <div style="color: var(--text-dim); margin-bottom: 10px;">${mvp.team}</div>
+                                        <div style="color: var(--text); font-size: 0.95rem;">
+                                            ${matchInfo}
+                                        </div>
+                                    </div>
+                                    ${isAdmin ? `
+                                        <button onclick="deleteMVP(${index})" style="background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">
+                                            🗑️
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                ${isAdmin ? `
+                    <button onclick="openMVPModal()" class="update-btn" style="margin-top: 20px; width: 100%;">
+                        ⭐ Ajouter un MVP
+                    </button>
+                ` : ''}
+            `;
+        }
+        
+        function renderMercato() {
+            const container = document.getElementById('mercatoTable');
+            if (!container) return;
+            
+            if (!leagueData.mercato) {
+                leagueData.mercato = [];
+            }
+            
+            if (leagueData.mercato.length === 0) {
+                container.innerHTML = `
+                    <p style="text-align: center; color: var(--text-dim); padding: 40px;">
+                        Aucun transfert enregistré
+                    </p>
+                    ${isAdmin ? `
+                        <button onclick="openMercatoModal()" class="update-btn" style="margin-top: 20px; width: 100%;">
+                            🔄 Ajouter un Transfert
+                        </button>
+                    ` : ''}
+                `;
+                return;
+            }
+            
+            const sortedTransfers = [...leagueData.mercato].sort((a, b) => b.timestamp - a.timestamp);
+            
+            container.innerHTML = `
+                <div style="display: grid; gap: 15px;">
+                    ${sortedTransfers.map((transfer, index) => `
+                        <div style="background: rgba(0, 184, 148, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary);">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 10px;">
+                                        ${transfer.playerName}
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 15px; color: var(--text-dim);">
+                                        <span style="color: var(--accent);">${transfer.fromTeam}</span>
+                                        <span style="color: var(--primary);">→</span>
+                                        <span style="color: var(--primary); font-weight: 600;">${transfer.toTeam}</span>
+                                    </div>
+                                    ${transfer.date ? `
+                                        <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-dim);">
+                                            📅 ${new Date(transfer.date).toLocaleDateString('fr-FR')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${isAdmin ? `
+                                    <button onclick="deleteTransfer(${index})" style="background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">
+                                        🗑️
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ${isAdmin ? `
+                    <button onclick="openMercatoModal()" class="update-btn" style="margin-top: 20px; width: 100%;">
+                        ➕ Ajouter un Transfert
+                    </button>
+                ` : ''}
+            `;
+        }
+        
+        // ADMIN FUNCTIONS FOR MVPs AND MERCATO
+        
+        window.openMVPModal = function() {
+            if (!isAdmin) return;
+            
+            const matchOptions = leagueData.matches
+                .filter(m => m.homeScore != null)
+                .map(m => `<option value="${m.id}">${m.home} vs ${m.away}</option>`)
+                .join('');
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            modal.innerHTML = `
+                <div style="background: var(--card); padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">⭐ Ajouter un MVP</h3>
+                    <select id="mvpMatchId" style="width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                        <option value="">Sélectionner un match</option>
+                        ${matchOptions}
+                    </select>
+                    <input type="text" id="mvpPlayerName" placeholder="Nom du joueur" style="width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                    <input type="text" id="mvpTeam" placeholder="Équipe" style="width: 100%; padding: 12px; margin-bottom: 20px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="submitMVP()" class="update-btn" style="flex: 1;">✅ Ajouter</button>
+                        <button onclick="this.closest('div').parentElement.parentElement.remove()" class="update-btn" style="flex: 1; background: var(--accent);">❌ Annuler</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+        
+        window.submitMVP = async function() {
+            const matchId = document.getElementById('mvpMatchId').value;
+            const playerName = document.getElementById('mvpPlayerName').value.trim();
+            const team = document.getElementById('mvpTeam').value.trim();
+            
+            if (!matchId || !playerName || !team) {
+                showAlert('⚠️ Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            if (!leagueData.matchMVPs) {
+                leagueData.matchMVPs = [];
+            }
+            
+            leagueData.matchMVPs.push({
+                matchId: matchId,
+                playerName: playerName,
+                team: team,
+                timestamp: Date.now()
+            });
+            
+            await saveToDatabase();
+            renderStats();
+            document.querySelector('[style*="z-index: 10000"]').remove();
+            showAlert('✅ MVP ajouté !', 'success');
+        };
+        
+        window.deleteMVP = async function(index) {
+            if (!isAdmin || !confirm('Supprimer ce MVP ?')) return;
+            
+            leagueData.matchMVPs.splice(index, 1);
+            await saveToDatabase();
+            renderStats();
+            showAlert('✅ MVP supprimé', 'success');
+        };
+        
+        window.openMercatoModal = function() {
+            if (!isAdmin) return;
+            
+            const teamOptions = Object.keys(leagueData.teams)
+                .map(team => `<option value="${team}">${team}</option>`)
+                .join('');
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            modal.innerHTML = `
+                <div style="background: var(--card); padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">🔄 Ajouter un Transfert</h3>
+                    <input type="text" id="transferPlayerName" placeholder="Nom du joueur" style="width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                    <select id="transferFromTeam" style="width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                        <option value="">Équipe d'origine</option>
+                        ${teamOptions}
+                    </select>
+                    <select id="transferToTeam" style="width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                        <option value="">Nouvelle équipe</option>
+                        ${teamOptions}
+                    </select>
+                    <input type="date" id="transferDate" style="width: 100%; padding: 12px; margin-bottom: 20px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text);">
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="submitTransfer()" class="update-btn" style="flex: 1;">✅ Ajouter</button>
+                        <button onclick="this.closest('div').parentElement.parentElement.remove()" class="update-btn" style="flex: 1; background: var(--accent);">❌ Annuler</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+        
+        window.submitTransfer = async function() {
+            const playerName = document.getElementById('transferPlayerName').value.trim();
+            const fromTeam = document.getElementById('transferFromTeam').value;
+            const toTeam = document.getElementById('transferToTeam').value;
+            const date = document.getElementById('transferDate').value;
+            
+            if (!playerName || !fromTeam || !toTeam) {
+                showAlert('⚠️ Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            if (fromTeam === toTeam) {
+                showAlert('⚠️ Les équipes doivent être différentes', 'error');
+                return;
+            }
+            
+            if (!leagueData.mercato) {
+                leagueData.mercato = [];
+            }
+            
+            leagueData.mercato.push({
+                playerName: playerName,
+                fromTeam: fromTeam,
+                toTeam: toTeam,
+                date: date || null,
+                timestamp: Date.now()
+            });
+            
+            await saveToDatabase();
+            renderStats();
+            document.querySelector('[style*="z-index: 10000"]').remove();
+            showAlert('✅ Transfert ajouté !', 'success');
+        };
+        
+        window.deleteTransfer = async function(index) {
+            if (!isAdmin || !confirm('Supprimer ce transfert ?')) return;
+            
+            leagueData.mercato.splice(index, 1);
+            await saveToDatabase();
+            renderStats();
+            showAlert('✅ Transfert supprimé', 'success');
+        };
+
         function renderMatchManagement() {
             if (!isAdmin) return;
 
@@ -4257,6 +4817,495 @@
             showAlert('✅ Votre vote a été enregistré!', 'success');
         };
 
+        // ====================================
+        // STATS SECTION - RENDER FUNCTIONS
+        // ====================================
+        
+        function renderStatsSection() {
+            renderTopScorers();
+            renderTopAssists();
+            renderCards();
+            renderMatchMVPs();
+            renderMercato();
+        }
+        
+        function renderTopScorers() {
+            const container = document.getElementById('topScorersTable');
+            
+            // Compter tous les buts par joueur
+            const scorersCount = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.scorers && match.scorers.length > 0) {
+                    match.scorers.forEach(scorer => {
+                        const cleanName = scorer.split("'")[0].trim(); // Enlever la minute
+                        if (cleanName) {
+                            if (!scorersCount[cleanName]) {
+                                scorersCount[cleanName] = {
+                                    name: cleanName,
+                                    goals: 0,
+                                    team: match.home // Approximation, à améliorer
+                                };
+                            }
+                            scorersCount[cleanName].goals++;
+                        }
+                    });
+                }
+            });
+            
+            // Convertir en array et trier
+            const sortedScorers = Object.values(scorersCount)
+                .sort((a, b) => b.goals - a.goals)
+                .slice(0, 10); // Top 10
+            
+            if (sortedScorers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 20px;">Aucun but marqué pour le moment</p>';
+                return;
+            }
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: rgba(0, 184, 148, 0.1); border-bottom: 2px solid var(--primary);">
+                            <th style="padding: 12px; text-align: left; color: var(--primary);">#</th>
+                            <th style="padding: 12px; text-align: left; color: var(--primary);">Joueur</th>
+                            <th style="padding: 12px; text-align: center; color: var(--primary);">⚽ Buts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            sortedScorers.forEach((scorer, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                html += `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 12px; font-weight: 600; color: var(--secondary);">${medal} ${index + 1}</td>
+                        <td style="padding: 12px; color: var(--text);">${scorer.name}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--primary); font-size: 1.2rem;">${scorer.goals}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function renderTopAssists() {
+            const container = document.getElementById('topAssistsTable');
+            
+            // Compter toutes les passes par joueur
+            const assistsCount = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.assists && match.assists.length > 0) {
+                    match.assists.forEach(assist => {
+                        const cleanName = assist.split("'")[0].trim();
+                        if (cleanName) {
+                            if (!assistsCount[cleanName]) {
+                                assistsCount[cleanName] = {
+                                    name: cleanName,
+                                    assists: 0
+                                };
+                            }
+                            assistsCount[cleanName].assists++;
+                        }
+                    });
+                }
+            });
+            
+            const sortedAssists = Object.values(assistsCount)
+                .sort((a, b) => b.assists - a.assists)
+                .slice(0, 10);
+            
+            if (sortedAssists.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 20px;">Aucune passe décisive pour le moment</p>';
+                return;
+            }
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: rgba(253, 203, 110, 0.1); border-bottom: 2px solid var(--secondary);">
+                            <th style="padding: 12px; text-align: left; color: var(--secondary);">#</th>
+                            <th style="padding: 12px; text-align: left; color: var(--secondary);">Joueur</th>
+                            <th style="padding: 12px; text-align: center; color: var(--secondary);">🎯 Passes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            sortedAssists.forEach((player, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                html += `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 12px; font-weight: 600; color: var(--secondary);">${medal} ${index + 1}</td>
+                        <td style="padding: 12px; color: var(--text);">${player.name}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--secondary); font-size: 1.2rem;">${player.assists}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function renderCards() {
+            // YELLOW CARDS
+            const yellowContainer = document.getElementById('yellowCardsTable');
+            const yellowCount = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.yellowCards && match.yellowCards.length > 0) {
+                    match.yellowCards.forEach(card => {
+                        const cleanName = card.split("'")[0].trim();
+                        if (cleanName) {
+                            yellowCount[cleanName] = (yellowCount[cleanName] || 0) + 1;
+                        }
+                    });
+                }
+            });
+            
+            const sortedYellow = Object.entries(yellowCount)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
+            
+            if (sortedYellow.length === 0) {
+                yellowContainer.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 15px; font-size: 0.9rem;">Aucun carton jaune</p>';
+            } else {
+                let html = '<div style="display: grid; gap: 8px;">';
+                sortedYellow.forEach((player, index) => {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(253, 203, 110, 0.1); border-radius: 8px;">
+                            <span style="color: var(--text);">${index + 1}. ${player.name}</span>
+                            <span style="font-weight: 700; color: #fdcb6e; font-size: 1.1rem;">${player.count} 🟨</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                yellowContainer.innerHTML = html;
+            }
+            
+            // RED CARDS
+            const redContainer = document.getElementById('redCardsTable');
+            const redCount = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.redCards && match.redCards.length > 0) {
+                    match.redCards.forEach(card => {
+                        const cleanName = card.split("'")[0].trim();
+                        if (cleanName) {
+                            redCount[cleanName] = (redCount[cleanName] || 0) + 1;
+                        }
+                    });
+                }
+            });
+            
+            const sortedRed = Object.entries(redCount)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
+            
+            if (sortedRed.length === 0) {
+                redContainer.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 15px; font-size: 0.9rem;">Aucun carton rouge</p>';
+            } else {
+                let html = '<div style="display: grid; gap: 8px;">';
+                sortedRed.forEach((player, index) => {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255, 71, 87, 0.1); border-radius: 8px;">
+                            <span style="color: var(--text);">${index + 1}. ${player.name}</span>
+                            <span style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">${player.count} 🟥</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                redContainer.innerHTML = html;
+            }
+        }
+        
+        function renderMatchMVPs() {
+            const container = document.getElementById('matchMVPsTable');
+            
+            if (!leagueData.matchMVPs) {
+                leagueData.matchMVPs = {};
+            }
+            
+            const mvpList = Object.entries(leagueData.matchMVPs).map(([matchId, mvpData]) => {
+                const match = leagueData.matches.find(m => m.id == matchId);
+                return {
+                    matchId,
+                    player: mvpData.player,
+                    team: mvpData.team || '',
+                    match: match,
+                    date: match ? match.date : null
+                };
+            }).sort((a, b) => {
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            if (mvpList.length === 0) {
+                container.innerHTML = `
+                    <p style="text-align: center; color: var(--text-dim); padding: 40px;">
+                        Aucun MVP désigné pour le moment
+                    </p>
+                    ${isAdmin ? `
+                        <p style="text-align: center; margin-top: 15px;">
+                            <button onclick="openMVPModal()" class="update-btn">⭐ Désigner un MVP</button>
+                        </p>
+                    ` : ''}
+                `;
+                return;
+            }
+            
+            let html = `
+                <div style="display: grid; gap: 15px;">
+            `;
+            
+            mvpList.forEach(mvp => {
+                const matchInfo = mvp.match ? `${mvp.match.home} vs ${mvp.match.away}` : 'Match inconnu';
+                const dateStr = mvp.date ? new Date(mvp.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
+                
+                html += `
+                    <div style="background: rgba(253, 203, 110, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid var(--secondary);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <div style="font-size: 1.3rem; font-weight: 700; color: var(--secondary); margin-bottom: 5px;">
+                                    ⭐ ${mvp.player}
+                                </div>
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">
+                                    ${matchInfo} ${dateStr ? `• ${dateStr}` : ''}
+                                </div>
+                            </div>
+                            ${isAdmin ? `
+                                <button onclick="removeMVP('${mvp.matchId}')" class="logout-btn" style="padding: 8px 15px; font-size: 0.9rem;">
+                                    🗑️ Supprimer
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            if (isAdmin) {
+                html += `
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button onclick="openMVPModal()" class="update-btn">⭐ Ajouter un MVP</button>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function renderMercato() {
+            const container = document.getElementById('mercatoTable');
+            
+            if (!leagueData.mercato) {
+                leagueData.mercato = [];
+            }
+            
+            const sortedMercato = [...leagueData.mercato].sort((a, b) => b.timestamp - a.timestamp);
+            
+            if (sortedMercato.length === 0) {
+                container.innerHTML = `
+                    <p style="text-align: center; color: var(--text-dim); padding: 40px;">
+                        Aucun transfert enregistré
+                    </p>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div style="display: grid; gap: 15px;">
+            `;
+            
+            sortedMercato.forEach((transfer, index) => {
+                const date = new Date(transfer.timestamp);
+                const dateStr = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+                
+                html += `
+                    <div style="background: rgba(0, 184, 148, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 15px;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">
+                                    ${transfer.player}
+                                </div>
+                                <div style="color: var(--text); margin-bottom: 5px;">
+                                    <span style="color: var(--accent);">De:</span> ${transfer.from || 'N/A'} 
+                                    <span style="color: var(--primary); margin: 0 8px;">→</span> 
+                                    <span style="color: var(--accent);">Vers:</span> ${transfer.to}
+                                </div>
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">
+                                    📅 ${dateStr}
+                                </div>
+                            </div>
+                            ${isAdmin ? `
+                                <button onclick="removeMercato(${index})" class="logout-btn" style="padding: 8px 15px; font-size: 0.9rem;">
+                                    🗑️ Supprimer
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        // ADMIN FUNCTIONS
+        window.openMVPModal = function() {
+            const modal = document.getElementById('matchModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            let matchesHtml = '<option value="">Sélectionnez un match</option>';
+            leagueData.matches.forEach(match => {
+                if (match.homeScore != null) { // Match terminé
+                    const date = new Date(match.date);
+                    const dateStr = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                    matchesHtml += `<option value="${match.id}">${match.home} vs ${match.away} (${dateStr})</option>`;
+                }
+            });
+            
+            modalContent.innerHTML = `
+                <h2 style="color: var(--primary); margin-bottom: 20px;">⭐ Désigner le MVP du Match</h2>
+                <div style="display: grid; gap: 15px;">
+                    <div>
+                        <label style="color: var(--text); font-weight: 600; margin-bottom: 8px; display: block;">Match:</label>
+                        <select id="mvpMatchSelect" style="width: 100%; padding: 12px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text); font-size: 1rem;">
+                            ${matchesHtml}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="color: var(--text); font-weight: 600; margin-bottom: 8px; display: block;">Nom du joueur MVP:</label>
+                        <input type="text" id="mvpPlayerInput" placeholder="Ex: Mohamed El Idrissi" style="width: 100%; padding: 12px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text); font-size: 1rem;">
+                    </div>
+                    <button onclick="saveMVP()" class="update-btn" style="margin-top: 10px;">
+                        ✅ Enregistrer le MVP
+                    </button>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        };
+        
+        window.saveMVP = async function() {
+            const matchId = document.getElementById('mvpMatchSelect').value;
+            const player = document.getElementById('mvpPlayerInput').value.trim();
+            
+            if (!matchId || !player) {
+                showAlert('⚠️ Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            if (!leagueData.matchMVPs) {
+                leagueData.matchMVPs = {};
+            }
+            
+            leagueData.matchMVPs[matchId] = {
+                player: player,
+                timestamp: Date.now()
+            };
+            
+            await saveToDatabase();
+            showAlert('✅ MVP enregistré !', 'success');
+            document.getElementById('matchModal').classList.remove('active');
+            renderMatchMVPs();
+        };
+        
+        window.removeMVP = async function(matchId) {
+            if (!confirm('Supprimer ce MVP ?')) return;
+            
+            delete leagueData.matchMVPs[matchId];
+            await saveToDatabase();
+            showAlert('🗑️ MVP supprimé', 'success');
+            renderMatchMVPs();
+        };
+        
+        window.openMercatoModal = function() {
+            const modal = document.getElementById('matchModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            let teamsHtml = '<option value="">Sélectionnez une équipe</option>';
+            Object.keys(leagueData.teams).forEach(team => {
+                teamsHtml += `<option value="${team}">${team}</option>`;
+            });
+            
+            modalContent.innerHTML = `
+                <h2 style="color: var(--primary); margin-bottom: 20px;">🔄 Ajouter un Transfert</h2>
+                <div style="display: grid; gap: 15px;">
+                    <div>
+                        <label style="color: var(--text); font-weight: 600; margin-bottom: 8px; display: block;">Nom du joueur:</label>
+                        <input type="text" id="mercatoPlayerInput" placeholder="Ex: Mohamed El Idrissi" style="width: 100%; padding: 12px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text); font-size: 1rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text); font-weight: 600; margin-bottom: 8px; display: block;">De (équipe d'origine):</label>
+                        <input type="text" id="mercatoFromInput" placeholder="Ex: Free agent, 2BAC SMA..." style="width: 100%; padding: 12px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text); font-size: 1rem;">
+                    </div>
+                    <div>
+                        <label style="color: var(--text); font-weight: 600; margin-bottom: 8px; display: block;">Vers (nouvelle équipe):</label>
+                        <select id="mercatoToSelect" style="width: 100%; padding: 12px; background: rgba(0, 184, 148, 0.1); border: 1px solid var(--primary); border-radius: 8px; color: var(--text); font-size: 1rem;">
+                            ${teamsHtml}
+                        </select>
+                    </div>
+                    <button onclick="saveMercato()" class="update-btn" style="margin-top: 10px;">
+                        ✅ Enregistrer le Transfert
+                    </button>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        };
+        
+        window.saveMercato = async function() {
+            const player = document.getElementById('mercatoPlayerInput').value.trim();
+            const from = document.getElementById('mercatoFromInput').value.trim();
+            const to = document.getElementById('mercatoToSelect').value;
+            
+            if (!player || !to) {
+                showAlert('⚠️ Veuillez remplir les champs obligatoires', 'error');
+                return;
+            }
+            
+            if (!leagueData.mercato) {
+                leagueData.mercato = [];
+            }
+            
+            leagueData.mercato.push({
+                player: player,
+                from: from || 'Free agent',
+                to: to,
+                timestamp: Date.now()
+            });
+            
+            await saveToDatabase();
+            showAlert('✅ Transfert enregistré !', 'success');
+            document.getElementById('matchModal').classList.remove('active');
+            renderMercato();
+        };
+        
+        window.removeMercato = async function(index) {
+            if (!confirm('Supprimer ce transfert ?')) return;
+            
+            leagueData.mercato.splice(index, 1);
+            await saveToDatabase();
+            showAlert('🗑️ Transfert supprimé', 'success');
+            renderMercato();
+        };
+
         function renderTeams() {
             const container = document.getElementById('teamsGrid');
             container.innerHTML = '';
@@ -4700,6 +5749,7 @@
             renderFixtures();
             renderTeams();
             renderNews();
+            renderStats();
             renderVotingSection();
             checkForNewNotifications();
             
@@ -4721,6 +5771,7 @@
                     renderFixtures();
                     renderTeams();
                     renderNews();
+                    renderStats();
                     renderVotingSection();
                     checkForNewNotifications();
                     console.log("🔄 Données mises à jour en temps réel");
