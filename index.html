@@ -25,6 +25,44 @@
             --bg-light: #141937;
             --text: #dfe6e9;
             --text-dim: #b2bec3;
+            --card: #1e2139;
+        }
+        
+        /* LIGHT MODE */
+        [data-theme="light"] {
+            --bg: #f5f6fa;
+            --bg-light: #ffffff;
+            --text: #2d3436;
+            --text-dim: #636e72;
+            --card: #ffffff;
+            --dark: #f5f6fa;
+            --dark-light: #dfe6e9;
+        }
+        
+        /* THEME TOGGLE BUTTON */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.6);
         }
 
         body {
@@ -1647,6 +1685,11 @@
     </style>
 </head>
 <body>
+    <!-- THEME TOGGLE BUTTON -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" title="Changer le thème">
+        🌙
+    </button>
+    
     <div class="bg-animation"></div>
     
     <!-- Notifications Container -->
@@ -1685,6 +1728,8 @@
             <button class="nav-btn" onclick="showSection('teams')">Équipes</button>
             <button class="nav-btn" onclick="showSection('stats')">📊 Stats</button>
             <button class="nav-btn" onclick="showSection('votes')">🏆 Votes</button>
+            <button class="nav-btn" onclick="showSection('players')">🌟 Joueurs</button>
+            <button class="nav-btn" onclick="showSection('fantasy')">🎮 Fantasy</button>
             <button class="nav-btn" onclick="showSection('knockout')">Phase Finale</button>
             <button class="nav-btn" onclick="showSection('admin')">Admin</button>
         </nav>
@@ -1778,6 +1823,35 @@
                     </h3>
                     <div id="mercatoTable" style="margin-top: 20px;"></div>
                 </div>
+                
+                <!-- 6. PREDICTIONS LEADERBOARD -->
+                <div class="group">
+                    <h3 style="color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                        <span>🎲</span>
+                        <span>Classement des Prédictions</span>
+                    </h3>
+                    <div id="predictionsLeaderboard" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAYERS SECTION -->
+        <div id="players" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                🌟 Profils des Joueurs
+            </h2>
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div id="playersGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;"></div>
+            </div>
+        </div>
+
+        <!-- FANTASY LEAGUE SECTION -->
+        <div id="fantasy" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                🎮 Fantasy League
+            </h2>
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div id="fantasyContent"></div>
             </div>
         </div>
 
@@ -3639,6 +3713,18 @@
                         </div>
                     `}
                 </div>
+                
+                <!-- SHARE BUTTONS -->
+                ${isFinished ? `
+                    <div style="display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap;">
+                        <button onclick="shareMatch(${matchId})" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+                            📤 Partager
+                        </button>
+                        <button onclick="shareOnWhatsApp(${matchId})" style="background: #25D366; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            💬 WhatsApp
+                        </button>
+                    </div>
+                ` : ''}
             `;
 
             // Match Details (if finished)
@@ -4844,6 +4930,427 @@
             renderMercato();
         };
 
+        // ========================================
+        // PARTAGE SOCIAL
+        // ========================================
+        
+        window.shareMatch = function(matchId) {
+            const match = leagueData.matches.find(m => m.id == matchId);
+            if (!match) return;
+            
+            const score = match.homeScore != null ? `${match.homeScore}-${match.awayScore}` : 'vs';
+            const text = `⚽ ${match.home} ${score} ${match.away} | GDGSR Ramadan League 2026`;
+            const url = `https://gdgsrramadanleague.wasmer.app/`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'GDGSR Ramadan League', text: text, url: url }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(`${text}\n${url}`).then(() => {
+                    showAlert('✅ Lien copié !', 'success');
+                });
+            }
+        };
+        
+        window.shareOnWhatsApp = function(matchId) {
+            const match = leagueData.matches.find(m => m.id == matchId);
+            if (!match) return;
+            
+            const score = match.homeScore != null ? `${match.homeScore}-${match.awayScore}` : 'vs';
+            const text = `⚽ *${match.home}* ${score} *${match.away}*\n\nGDGSR Ramadan League 2026\n👉 https://gdgsrramadanleague.wasmer.app/`;
+            
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        };
+
+        // ========================================
+        // PRÉDICTIONS AVANCÉES
+        // ========================================
+        
+        function calculatePredictionPoints(prediction, actualHomeScore, actualAwayScore) {
+            if (!prediction || actualHomeScore == null || actualAwayScore == null) return 0;
+            
+            const predHome = prediction.homeScore;
+            const predAway = prediction.awayScore;
+            
+            if (predHome === actualHomeScore && predAway === actualAwayScore) return 3;
+            if ((predHome - predAway) === (actualHomeScore - actualAwayScore)) return 2;
+            
+            const predResult = predHome > predAway ? 'home' : predHome < predAway ? 'away' : 'draw';
+            const actualResult = actualHomeScore > actualAwayScore ? 'home' : actualHomeScore < actualAwayScore ? 'away' : 'draw';
+            
+            return predResult === actualResult ? 1 : 0;
+        }
+        
+        function renderPredictionsLeaderboard() {
+            const container = document.getElementById('predictionsLeaderboard');
+            if (!container) return;
+            
+            if (!leagueData.predictions) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucune prédiction pour le moment</p>';
+                return;
+            }
+            
+            const userPoints = {};
+            
+            leagueData.matches.forEach(match => {
+                if (match.homeScore == null || match.awayScore == null) return;
+                
+                const matchPredictions = leagueData.predictions[match.id];
+                if (!matchPredictions) return;
+                
+                Object.keys(matchPredictions).forEach(userId => {
+                    const prediction = matchPredictions[userId];
+                    const points = calculatePredictionPoints(prediction, match.homeScore, match.awayScore);
+                    
+                    if (!userPoints[userId]) {
+                        userPoints[userId] = { points: 0, correct: 0, total: 0 };
+                    }
+                    
+                    userPoints[userId].points += points;
+                    userPoints[userId].total += 1;
+                    if (points > 0) userPoints[userId].correct += 1;
+                });
+            });
+            
+            const sortedUsers = Object.entries(userPoints).sort((a, b) => b[1].points - a[1].points).slice(0, 10);
+            
+            if (sortedUsers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucune prédiction vérifiée</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: rgba(0, 184, 148, 0.1); border-bottom: 2px solid var(--primary);">
+                            <th style="padding: 15px; text-align: left; color: var(--primary);">#</th>
+                            <th style="padding: 15px; text-align: left; color: var(--primary);">Utilisateur</th>
+                            <th style="padding: 15px; text-align: center; color: var(--primary);">Points</th>
+                            <th style="padding: 15px; text-align: center; color: var(--primary);">Précision</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedUsers.map(([userId, data], index) => {
+                            const accuracy = Math.round((data.correct / data.total) * 100);
+                            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                            
+                            return `
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <td style="padding: 12px; color: var(--secondary); font-weight: 700;">${medal} ${index + 1}</td>
+                                    <td style="padding: 12px; color: var(--text); font-weight: 600;">User ${userId.substring(0, 8)}</td>
+                                    <td style="padding: 12px; text-align: center; color: var(--primary); font-size: 1.2rem; font-weight: 700;">${data.points}</td>
+                                    <td style="padding: 12px; text-align: center; color: var(--secondary);">${accuracy}% (${data.correct}/${data.total})</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(0, 184, 148, 0.1); border-radius: 10px;">
+                    <h4 style="color: var(--primary); margin-bottom: 10px;">📊 Système de Points</h4>
+                    <ul style="color: var(--text-dim); list-style: none; padding: 0;">
+                        <li style="margin: 5px 0;">🎯 Score exact = <strong style="color: var(--primary);">3 points</strong></li>
+                        <li style="margin: 5px 0;">📊 Bonne différence = <strong style="color: var(--primary);">2 points</strong></li>
+                        <li style="margin: 5px 0;">✅ Bon résultat = <strong style="color: var(--primary);">1 point</strong></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // PROFILS JOUEURS
+        // ========================================
+        
+        function renderPlayers() {
+            const container = document.getElementById('playersGrid');
+            if (!container) return;
+            
+            const allPlayers = [];
+            
+            Object.keys(leagueData.teams).forEach(teamName => {
+                const team = leagueData.teams[teamName];
+                team.players.forEach((playerName, index) => {
+                    if (!playerName.trim()) return;
+                    
+                    let goals = 0;
+                    let assists = 0;
+                    let yellowCards = 0;
+                    let redCards = 0;
+                    let mvps = 0;
+                    
+                    leagueData.matches.forEach(match => {
+                        if (match.scorers) goals += match.scorers.filter(s => s.includes(playerName)).length;
+                        if (match.assists) assists += match.assists.filter(a => a.includes(playerName)).length;
+                        if (match.yellowCards) yellowCards += match.yellowCards.filter(c => c.includes(playerName)).length;
+                        if (match.redCards) redCards += match.redCards.filter(c => c.includes(playerName)).length;
+                    });
+                    
+                    if (leagueData.matchMVPs) {
+                        Object.values(leagueData.matchMVPs).forEach(mvp => {
+                            if (mvp.player === playerName) mvps++;
+                        });
+                    }
+                    
+                    const number = team.playerNumbers ? team.playerNumbers[index] : '';
+                    
+                    allPlayers.push({
+                        name: playerName,
+                        team: teamName,
+                        number: number,
+                        goals: goals,
+                        assists: assists,
+                        yellowCards: yellowCards,
+                        redCards: redCards,
+                        mvps: mvps
+                    });
+                });
+            });
+            
+            allPlayers.sort((a, b) => b.goals - a.goals);
+            
+            container.innerHTML = allPlayers.map(player => `
+                <div style="background: var(--bg-light); border-radius: 15px; padding: 20px; border: 2px solid rgba(0, 184, 148, 0.3); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)';" onmouseout="this.style.transform=''; this.style.borderColor='rgba(0, 184, 148, 0.3)';">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: 700;">
+                            ${player.number || player.name.charAt(0)}
+                        </div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 5px;">
+                            ${player.name}
+                        </div>
+                        <div style="color: var(--text-dim); font-size: 0.9rem;">
+                            ${player.team}
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <div style="background: rgba(0, 184, 148, 0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">⚽ ${player.goals}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-dim);">Buts</div>
+                        </div>
+                        <div style="background: rgba(253, 203, 110, 0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--secondary);">🎯 ${player.assists}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-dim);">Passes</div>
+                        </div>
+                    </div>
+                    
+                    ${player.mvps > 0 ? `
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(253, 203, 110, 0.2); border-radius: 8px; text-align: center;">
+                            <span style="color: var(--secondary); font-weight: 700;">⭐ ${player.mvps} MVP${player.mvps > 1 ? 's' : ''}</span>
+                        </div>
+                    ` : ''}
+                    
+                    ${player.yellowCards + player.redCards > 0 ? `
+                        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 15px;">
+                            ${player.yellowCards > 0 ? `<span style="color: #fdcb6e;">🟨 ${player.yellowCards}</span>` : ''}
+                            ${player.redCards > 0 ? `<span style="color: var(--accent);">🟥 ${player.redCards}</span>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // ========================================
+        // FANTASY LEAGUE
+        // ========================================
+        
+        function renderFantasy() {
+            const container = document.getElementById('fantasyContent');
+            if (!container) return;
+            
+            const visitorId = getVisitorId();
+            
+            if (!leagueData.fantasy) leagueData.fantasy = {};
+            
+            const userTeam = leagueData.fantasy[visitorId];
+            
+            if (!userTeam) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <h2 style="color: var(--primary); margin-bottom: 20px; font-size: 2rem;">🎮 Bienvenue dans la Fantasy League !</h2>
+                        <p style="color: var(--text-dim); margin-bottom: 30px; font-size: 1.1rem;">
+                            Créez votre équipe de rêve avec un budget de <strong style="color: var(--secondary);">100 points</strong>
+                        </p>
+                        <button onclick="createFantasyTeam()" class="update-btn" style="font-size: 1.2rem; padding: 20px 40px;">
+                            ✨ Créer mon équipe
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            let totalPoints = 0;
+            
+            userTeam.players.forEach(player => {
+                let points = 0;
+                
+                leagueData.matches.forEach(match => {
+                    if (match.homeScore == null) return;
+                    if (match.scorers) points += match.scorers.filter(s => s.includes(player.name)).length * 3;
+                    if (match.assists) points += match.assists.filter(a => a.includes(player.name)).length * 2;
+                });
+                
+                player.fantasyPoints = points;
+                totalPoints += points;
+            });
+            
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; background: linear-gradient(135deg, rgba(0, 184, 148, 0.2), rgba(253, 203, 110, 0.2)); border-radius: 20px; margin-bottom: 30px;">
+                    <h2 style="color: var(--primary); font-size: 3rem; margin-bottom: 10px;">${totalPoints}</h2>
+                    <p style="color: var(--text); font-size: 1.2rem;">Points Fantasy</p>
+                </div>
+                
+                <div style="display: grid; gap: 15px;">
+                    ${userTeam.players.map((player, index) => `
+                        <div style="background: var(--bg-light); padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text);">
+                                    ${index + 1}. ${player.name}
+                                </div>
+                                <div style="color: var(--text-dim); margin-top: 5px;">
+                                    ${player.team} • Prix: ${player.price} pts
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--secondary);">
+                                    ${player.fantasyPoints}
+                                </div>
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">pts Fantasy</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <button onclick="resetFantasyTeam()" class="update-btn" style="width: 100%; margin-top: 30px; background: var(--accent);">
+                    🔄 Réinitialiser l'équipe
+                </button>
+            `;
+        }
+        
+        window.createFantasyTeam = function() {
+            const visitorId = getVisitorId();
+            const modal = document.getElementById('matchModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            const allPlayers = [];
+            Object.keys(leagueData.teams).forEach(teamName => {
+                const team = leagueData.teams[teamName];
+                team.players.forEach((playerName, index) => {
+                    if (!playerName.trim()) return;
+                    
+                    let goals = 0;
+                    let assists = 0;
+                    
+                    leagueData.matches.forEach(match => {
+                        if (match.scorers) goals += match.scorers.filter(s => s.includes(playerName)).length;
+                        if (match.assists) assists += match.assists.filter(a => a.includes(playerName)).length;
+                    });
+                    
+                    const price = Math.max(5, Math.min(20, 5 + goals * 2 + assists));
+                    
+                    allPlayers.push({ name: playerName, team: teamName, price: price, goals: goals, assists: assists });
+                });
+            });
+            
+            allPlayers.sort((a, b) => b.price - a.price);
+            
+            window.fantasySelectedPlayers = [];
+            window.fantasyBudget = 100;
+            
+            modalContent.innerHTML = `
+                <div style="padding: 20px;">
+                    <h2 style="color: var(--primary); margin-bottom: 20px;">🎮 Créer votre Fantasy Team</h2>
+                    <div style="background: rgba(0, 184, 148, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--secondary);">
+                            Budget restant: <span id="remainingBudget">100</span> points
+                        </div>
+                        <div style="color: var(--text-dim); margin-top: 5px;">Sélectionnez 5 joueurs</div>
+                    </div>
+                    
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        ${allPlayers.map(player => `
+                            <div class="fantasy-player" data-player='${JSON.stringify(player)}' style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 10px; background: var(--bg-light); border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s ease;" onclick="selectFantasyPlayer(this)">
+                                <div>
+                                    <div style="font-weight: 700; color: var(--text);">${player.name}</div>
+                                    <div style="font-size: 0.9rem; color: var(--text-dim);">${player.team} • ⚽ ${player.goals} • 🎯 ${player.assists}</div>
+                                </div>
+                                <div style="background: var(--primary); color: white; padding: 8px 15px; border-radius: 8px; font-weight: 700;">
+                                    ${player.price} pts
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button onclick="saveFantasyTeam()" class="update-btn" style="width: 100%; margin-top: 20px;" id="saveFantasyBtn" disabled>
+                        💾 Sauvegarder l'équipe
+                    </button>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        };
+        
+        window.selectFantasyPlayer = function(element) {
+            const player = JSON.parse(element.getAttribute('data-player'));
+            const isSelected = element.classList.contains('selected');
+            
+            if (isSelected) {
+                element.classList.remove('selected');
+                element.style.borderColor = 'transparent';
+                window.fantasySelectedPlayers = window.fantasySelectedPlayers.filter(p => p.name !== player.name);
+                window.fantasyBudget += player.price;
+            } else {
+                if (!window.fantasySelectedPlayers) window.fantasySelectedPlayers = [];
+                if (!window.fantasyBudget) window.fantasyBudget = 100;
+                
+                if (window.fantasySelectedPlayers.length >= 5) {
+                    showAlert('❌ Maximum 5 joueurs', 'error');
+                    return;
+                }
+                
+                if (player.price > window.fantasyBudget) {
+                    showAlert('❌ Budget insuffisant', 'error');
+                    return;
+                }
+                
+                element.classList.add('selected');
+                element.style.borderColor = 'var(--primary)';
+                window.fantasySelectedPlayers.push(player);
+                window.fantasyBudget -= player.price;
+            }
+            
+            document.getElementById('remainingBudget').textContent = window.fantasyBudget;
+            document.getElementById('saveFantasyBtn').disabled = window.fantasySelectedPlayers.length !== 5;
+        };
+        
+        window.saveFantasyTeam = async function() {
+            if (!window.fantasySelectedPlayers || window.fantasySelectedPlayers.length !== 5) {
+                showAlert('❌ Sélectionnez 5 joueurs', 'error');
+                return;
+            }
+            
+            const visitorId = getVisitorId();
+            
+            if (!leagueData.fantasy) leagueData.fantasy = {};
+            
+            leagueData.fantasy[visitorId] = {
+                players: window.fantasySelectedPlayers,
+                budgetUsed: 100 - window.fantasyBudget,
+                createdAt: Date.now()
+            };
+            
+            await saveToDatabase();
+            showAlert('✅ Équipe Fantasy créée !', 'success');
+            document.getElementById('matchModal').classList.remove('active');
+            renderFantasy();
+        };
+        
+        window.resetFantasyTeam = async function() {
+            if (!confirm('Réinitialiser votre équipe Fantasy ?')) return;
+            
+            const visitorId = getVisitorId();
+            delete leagueData.fantasy[visitorId];
+            await saveToDatabase();
+            renderFantasy();
+        };
+
         function renderTeams() {
             const container = document.getElementById('teamsGrid');
             container.innerHTML = '';
@@ -5212,6 +5719,8 @@
                 renderMatchManagement();
                 renderTeams();
                 renderStats(); // ← AJOUTÉ pour afficher les boutons admin
+                renderPlayers();
+                renderFantasy();
                 showAlert('Connecté en tant qu\'admin!', 'success');
             } else {
                 showAlert('Mot de passe incorrect!', 'error');
@@ -5243,6 +5752,35 @@
                 setTimeout(() => alert.remove(), 300);
             }, 3000);
         }
+
+        // THEME TOGGLE
+        window.toggleTheme = function() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const button = document.getElementById('themeToggle');
+            
+            html.setAttribute('data-theme', newTheme);
+            button.textContent = newTheme === 'light' ? '🌙' : '☀️';
+            
+            // Sauvegarder la préférence
+            localStorage.setItem('theme', newTheme);
+        };
+        
+        // Charger le thème sauvegardé au démarrage
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const html = document.documentElement;
+            const button = document.getElementById('themeToggle');
+            
+            if (savedTheme === 'light') {
+                html.setAttribute('data-theme', 'light');
+                if (button) button.textContent = '🌙';
+            }
+        }
+        
+        // Appeler au chargement
+        loadTheme();
 
         window.showSection = function(sectionId) {
             document.querySelectorAll('.section').forEach(section => {
@@ -5290,6 +5828,8 @@
             renderTeams();
             renderNews();
             renderStats();
+            renderPlayers();
+            renderFantasy();
             renderVotingSection();
             checkForNewNotifications();
             
@@ -5312,6 +5852,8 @@
                     renderTeams();
                     renderNews();
                     renderStats();
+                    renderPlayers();
+                    renderFantasy();
                     renderVotingSection();
                     checkForNewNotifications();
                     console.log("🔄 Données mises à jour en temps réel");
