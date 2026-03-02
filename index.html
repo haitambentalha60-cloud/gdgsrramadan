@@ -1904,8 +1904,8 @@
                     </div>
                 </div>
                 
-                <div style="background: rgba(253, 203, 110, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                    <p style="color: var(--text); font-size: 1.1rem;">
+                <div id="knockoutAdminSection" style="background: rgba(253, 203, 110, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
+                    <p style="color: var(--text); font-size: 1.1rem; margin-bottom: 15px;">
                         🏆 La finale sera ajoutée manuellement par l'admin
                     </p>
                 </div>
@@ -5194,6 +5194,65 @@
             await saveToDatabase();
             renderFantasy();
         };
+        
+        // ========================================
+        // GESTION PHASE FINALE
+        // ========================================
+        
+        function renderKnockoutSection() {
+            const container = document.getElementById('knockoutAdminSection');
+            if (!container) return;
+            
+            let html = `
+                <p style="color: var(--text); font-size: 1.1rem; margin-bottom: 15px;">
+                    🏆 La finale sera ajoutée manuellement par l'admin
+                </p>
+            `;
+            
+            if (isAdmin) {
+                html += `
+                    <button onclick="deleteAllKnockoutMatches()" class="update-btn" style="background: var(--accent); margin-top: 10px;">
+                        🗑️ Supprimer tous les matchs de phase finale
+                    </button>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        window.deleteAllKnockoutMatches = async function() {
+            if (!isAdmin) {
+                showAlert('❌ Accès refusé', 'error');
+                return;
+            }
+            
+            if (!confirm('⚠️ ATTENTION : Cela va supprimer TOUS les matchs de phase finale (barrage, demi-finales, finale).\n\nContinuer ?')) {
+                return;
+            }
+            
+            const knockoutMatchIds = ['barrage-1', 'semi-1', 'semi-2', 'final'];
+            const initialCount = leagueData.matches.length;
+            
+            leagueData.matches = leagueData.matches.filter(match => {
+                return !knockoutMatchIds.includes(match.id);
+            });
+            
+            const deletedCount = initialCount - leagueData.matches.length;
+            
+            if (deletedCount === 0) {
+                showAlert('ℹ️ Aucun match de phase finale à supprimer', 'success');
+                return;
+            }
+            
+            await saveToDatabase();
+            
+            showAlert(`✅ ${deletedCount} match(s) supprimé(s) !`, 'success');
+            
+            // Recharger la page après 1 seconde
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        };
 
         function renderTeams() {
             const container = document.getElementById('teamsGrid');
@@ -5565,6 +5624,7 @@
                 renderStats(); // ← AJOUTÉ pour afficher les boutons admin
                 renderPlayers();
                 renderFantasy();
+                renderKnockoutSection();
                 showAlert('Connecté en tant qu\'admin!', 'success');
             } else {
                 showAlert('Mot de passe incorrect!', 'error');
@@ -5578,6 +5638,7 @@
             document.getElementById('adminPassword').value = '';
             renderTeams();
             renderStats(); // ← AJOUTÉ pour cacher les boutons admin
+            renderKnockoutSection();
             showAlert('Déconnecté', 'success');
         };
 
