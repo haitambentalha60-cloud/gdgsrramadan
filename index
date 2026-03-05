@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDGSR Ramadan Sport Games 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Righteous&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00b894;
+            --secondary: #fdcb6e;
+            --accent: #fd79a8;
+            --bg: #0a0e27;
+            --bg-light: #141937;
+            --text: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* ANIMATION D'OUVERTURE */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg-light) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeOut 1s ease 3s forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        .splash-logo {
+            font-family: 'Righteous', cursive;
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .splash-logo .line {
+            opacity: 0;
+            animation: slideIn 0.8s ease forwards;
+        }
+
+        .splash-logo .line:nth-child(1) {
+            color: var(--primary);
+            animation-delay: 0.2s;
+        }
+
+        .splash-logo .line:nth-child(2) {
+            color: var(--secondary);
+            animation-delay: 0.6s;
+        }
+
+        .splash-logo .line:nth-child(3) {
+            color: var(--accent);
+            animation-delay: 1s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .splash-subtitle {
+            font-size: 1.5rem;
+            color: var(--text);
+            opacity: 0;
+            animation: fadeIn 1s ease 1.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* PAGE D'ACCUEIL */
+        #home-page {
+            opacity: 0;
+            animation: fadeIn 1s ease 3.5s forwards;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .home-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .home-title {
+            font-family: 'Righteous', cursive;
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .home-subtitle {
+            font-size: 1.3rem;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        .sports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .sport-card {
+            background: linear-gradient(135deg, var(--bg-light) 0%, rgba(20, 25, 55, 0.5) 100%);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sport-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 184, 148, 0.1), rgba(253, 203, 110, 0.1));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .sport-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 20px 60px rgba(0, 184, 148, 0.4);
+        }
+
+        .sport-card:hover::before {
+            opacity: 1;
+        }
+
+        .sport-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.4s ease;
+        }
+
+        .sport-card:hover .sport-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .sport-name {
+            font-family: 'Righteous', cursive;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .sport-description {
+            color: var(--text);
+            opacity: 0.7;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sport-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary);
+            color: var(--bg);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 2;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .splash-logo {
+                font-size: 2.5rem;
+            }
+
+            .home-title {
+                font-size: 2rem;
+            }
+
+            .sports-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .sport-card {
+                padding: 30px;
+            }
+        }
+
+        /* Background Animation */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            background: 
+                radial-gradient(circle at 20% 50%, var(--primary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--secondary) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, var(--accent) 0%, transparent 50%);
+            animation: moveGradient 15s ease infinite;
+        }
+
+        @keyframes moveGradient {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            33% {
+                transform: translate(30px, -30px);
+            }
+            66% {
+                transform: translate(-30px, 30px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="splash-logo">
+            <div class="line">GDGSR</div>
+            <div class="line">RAMADAN</div>
+            <div class="line">SPORT GAMES</div>
+        </div>
+        <div class="splash-subtitle">2026 Edition</div>
+    </div>
+
+    <!-- HOME PAGE -->
+    <div id="home-page">
+        <div class="home-header">
+            <h1 class="home-title">GDGSR RAMADAN SPORT GAMES</h1>
+            <p class="home-subtitle">🏆 Choisissez votre tournoi 🏆</p>
+        </div>
+
+        <div class="sports-grid">
+            <!-- FOOTBALL -->
+            <div class="sport-card" onclick="window.location.href='football.html'">
+                <div class="sport-badge">LIVE</div>
+                <div class="sport-icon">⚽</div>
+                <div class="sport-name">Football</div>
+                <div class="sport-description">
+                    9 équipes • Phase de groupes • Demi-finales • Finale
+                </div>
+            </div>
+
+            <!-- CHESS -->
+            <div class="sport-card" onclick="window.location.href='chess.html'">
+                <div class="sport-badge">NEW</div>
+                <div class="sport-icon">♟️</div>
+                <div class="sport-name">Chess</div>
+                <div class="sport-description">
+                    16 joueurs • Élimination directe • Finale
+                </div>
+            </div>
+
+            <!-- PING PONG -->
+            <div class="sport-card" onclick="window.location.href='pingpong.html'">
+                <div class="sport-badge">NEW</div>
+                <div class="sport-icon">🏓</div>
+                <div class="sport-name">Ping Pong</div>
+                <div class="sport-description">
+                    16 joueurs • Élimination directe • Finale
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Redirection automatique après l'animation (optionnel)
+        // setTimeout(() => {
+        //     document.getElementById('splash-screen').style.display = 'none';
+        // }, 4000);
+    </script>
+</body>
+</html>
