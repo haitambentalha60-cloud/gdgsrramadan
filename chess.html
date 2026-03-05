@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDGSR Chess Tournament 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Righteous&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00b894;
+            --primary-dark: #00916d;
+            --secondary: #fdcb6e;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --dark-light: #636e72;
+            --bg: #0a0e27;
+            --bg-light: #141937;
+            --text: #dfe6e9;
+            --text-dim: #b2bec3;
+            --card: #1e2139;
+        }
+
+        /* LIGHT MODE */
+        [data-theme="light"] {
+            --bg: #f5f6fa;
+            --bg-light: #ffffff;
+            --text: #2d3436;
+            --text-dim: #636e72;
+            --card: #ffffff;
+            --dark: #f5f6fa;
+            --dark-light: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* THEME TOGGLE */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+        }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg) 100%);
+        }
+
+        h1 {
+            font-family: 'Righteous', cursive;
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+        }
+
+        /* NAVIGATION */
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            background: var(--bg-light);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: var(--card);
+            color: var(--text);
+            border: 2px solid transparent;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* SECTIONS */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* BRACKET */
+        .bracket-container {
+            overflow-x: auto;
+            padding: 40px 20px;
+        }
+
+        .bracket {
+            display: flex;
+            gap: 60px;
+            min-width: 1200px;
+        }
+
+        .bracket-round {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .bracket-round h3 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-family: 'Righteous', cursive;
+        }
+
+        .bracket-match {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .bracket-match:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .bracket-player {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            background: rgba(0, 184, 148, 0.05);
+        }
+
+        .bracket-player.winner {
+            background: rgba(0, 184, 148, 0.2);
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .bracket-player.loser {
+            opacity: 0.5;
+        }
+
+        .player-name {
+            flex: 1;
+        }
+
+        .player-score {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-left: 15px;
+        }
+
+        /* CALENDAR */
+        .calendar-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .calendar-day {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .day-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-family: 'Righteous', cursive;
+        }
+
+        .match-item {
+            background: rgba(0, 184, 148, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .match-item:hover {
+            background: rgba(0, 184, 148, 0.2);
+            transform: translateX(5px);
+        }
+
+        /* NEWS */
+        .news-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .news-card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .news-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .news-date {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        /* VOTE */
+        .vote-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .vote-card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .vote-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .vote-card.voted {
+            border-color: var(--secondary);
+            background: rgba(253, 203, 110, 0.1);
+        }
+
+        .player-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 15px;
+            font-weight: 700;
+        }
+
+        .vote-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        /* ADMIN */
+        .admin-login {
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: rgba(0, 184, 148, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Barlow', sans-serif;
+        }
+
+        button, .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        button:hover, .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--accent);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .bracket {
+                gap: 30px;
+            }
+
+            .vote-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        /* LOADING */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 184, 148, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ALERT */
+        .alert {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .alert.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .alert.error {
+            background: var(--accent);
+        }
+
+        .alert.success {
+            background: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- THEME TOGGLE -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" title="Changer le thème">
+        🌙
+    </button>
+
+    <!-- LOADING -->
+    <div class="loading" id="loadingIndicator">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- ALERT -->
+    <div class="alert" id="alertBox"></div>
+
+    <div class="container">
+        <header>
+            <!-- BOUTON RETOUR ACCUEIL -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <a href="index.html" style="display: inline-flex; align-items: center; gap: 10px; background: rgba(0, 184, 148, 0.1); color: var(--primary); padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; border: 2px solid var(--primary); transition: all 0.3s ease;">
+                    🏠 Accueil Sports
+                </a>
+            </div>
+
+            <h1>♟️ CHESS TOURNAMENT 2026</h1>
+            <p class="subtitle">GDGSR Ramadan Chess Championship</p>
+            <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <span style="background: rgba(0, 184, 148, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--text);">
+                    👥 16 Joueurs
+                </span>
+                <span style="background: rgba(0, 184, 148, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--text);">
+                    🏆 Élimination Directe
+                </span>
+                <span style="background: rgba(0, 184, 148, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--text);">
+                    📅 15-20 Mars 2026
+                </span>
+            </div>
+        </header>
+
+        <nav>
+            <button class="nav-btn active" onclick="showSection('bracket')">🏆 Bracket</button>
+            <button class="nav-btn" onclick="showSection('calendar')">📅 Calendrier</button>
+            <button class="nav-btn" onclick="showSection('news')">📰 Actualités</button>
+            <button class="nav-btn" onclick="showSection('vote')">🗳️ Vote</button>
+            <button class="nav-btn" onclick="showSection('admin')">👤 Admin</button>
+        </nav>
+
+        <!-- BRACKET SECTION -->
+        <div id="bracket" class="section active">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                🏆 Tableau du Tournoi
+            </h2>
+            <div class="bracket-container" id="bracketContainer">
+                <!-- Bracket will be rendered here -->
+            </div>
+        </div>
+
+        <!-- CALENDAR SECTION -->
+        <div id="calendar" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                📅 Calendrier des Matchs
+            </h2>
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Calendar will be rendered here -->
+            </div>
+        </div>
+
+        <!-- NEWS SECTION -->
+        <div id="news" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                📰 Actualités
+            </h2>
+            <div class="news-grid" id="newsGrid">
+                <!-- News will be rendered here -->
+            </div>
+            <div id="adminNewsSection" style="margin-top: 30px; text-align: center; display: none;">
+                <button onclick="openNewsModal()" class="btn">➕ Ajouter une actualité</button>
+            </div>
+        </div>
+
+        <!-- VOTE SECTION -->
+        <div id="vote" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                🗳️ Votez pour le Meilleur Joueur
+            </h2>
+            <div class="vote-grid" id="voteGrid">
+                <!-- Vote cards will be rendered here -->
+            </div>
+        </div>
+
+        <!-- ADMIN SECTION -->
+        <div id="admin" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                👤 Administration
+            </h2>
+            
+            <!-- LOGIN FORM -->
+            <div id="adminLoginForm" class="admin-login">
+                <h3 style="text-align: center; color: var(--primary); margin-bottom: 20px;">Connexion Admin</h3>
+                <input type="password" id="adminPassword" placeholder="Mot de passe admin">
+                <button onclick="loginAdmin()" style="width: 100%; margin-top: 10px;">Se connecter</button>
+            </div>
+
+            <!-- ADMIN PANEL -->
+            <div id="adminPanel" class="admin-panel">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <button onclick="logoutAdmin()" class="btn btn-danger">Déconnexion</button>
+                </div>
+
+                <div style="display: grid; gap: 30px;">
+                    <!-- UPDATE MATCH RESULTS -->
+                    <div style="background: var(--card); padding: 25px; border-radius: 15px; border: 2px solid rgba(0, 184, 148, 0.3);">
+                        <h3 style="color: var(--primary); margin-bottom: 20px;">📊 Mettre à jour les résultats</h3>
+                        <div id="adminMatchList">
+                            <!-- Matches list will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- ADD PLAYERS -->
+                    <div style="background: var(--card); padding: 25px; border-radius: 15px; border: 2px solid rgba(0, 184, 148, 0.3);">
+                        <h3 style="color: var(--primary); margin-bottom: 20px;">👥 Gérer les Joueurs</h3>
+                        <div id="adminPlayersList">
+                            <!-- Players list will be rendered here -->
+                        </div>
+                        <button onclick="generateInitialBracket()" class="btn" style="margin-top: 15px;">
+                            🔄 Générer le Bracket Initial
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="matchModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- FIREBASE & JAVASCRIPT -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLqEyNDKe1Kcqq89DcBybLjLU3MmrXxXA",
+            authDomain: "gdgsrramadan.firebaseapp.com",
+            databaseURL: "https://gdgsrramadan-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "gdgsrramadan",
+            storageBucket: "gdgsrramadan.firebasestorage.app",
+            messagingSenderId: "906023044466",
+            appId: "1:906023044466:web:84ba0c826f2d14f2f9e9e0",
+            measurementId: "G-T8WYVYWZZN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let chessData = {
+            players: [],
+            matches: [],
+            news: [],
+            votes: {}
+        };
+
+        let isAdmin = false;
+        const ADMIN_PASSWORD = "thegoat2008";
+
+        // THEME TOGGLE
+        window.toggleTheme = function() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const button = document.getElementById('themeToggle');
+            
+            html.setAttribute('data-theme', newTheme);
+            button.textContent = newTheme === 'light' ? '🌙' : '☀️';
+            localStorage.setItem('chess-theme', newTheme);
+        };
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('chess-theme') || 'dark';
+            const html = document.documentElement;
+            const button = document.getElementById('themeToggle');
+            
+            if (savedTheme === 'light') {
+                html.setAttribute('data-theme', 'light');
+                if (button) button.textContent = '🌙';
+            }
+        }
+
+        loadTheme();
+
+        // NAVIGATION
+        window.showSection = function(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+        };
+
+        // ALERT
+        window.showAlert = function(message, type = 'success') {
+            const alert = document.getElementById('alertBox');
+            alert.textContent = message;
+            alert.className = `alert show ${type}`;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 3000);
+        };
+
+        // LOADING
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').classList.toggle('active', show);
+        }
+
+        // SAVE TO DATABASE
+        async function saveToDatabase() {
+            try {
+                await set(ref(database, 'chess'), chessData);
+                console.log('✅ Données sauvegardées');
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde:', error);
+                showAlert('Erreur de sauvegarde', 'error');
+            }
+        }
+
+        // GENERATE INITIAL BRACKET
+        window.generateInitialBracket = async function() {
+            if (!confirm('Générer le bracket initial avec 16 joueurs ?')) return;
+
+            // Créer 16 joueurs par défaut
+            chessData.players = [];
+            for (let i = 1; i <= 16; i++) {
+                chessData.players.push({
+                    id: i,
+                    name: `Joueur ${i}`,
+                    rating: 1200 + Math.floor(Math.random() * 600)
+                });
+            }
+
+            // Créer les matchs du Round of 16
+            chessData.matches = [];
+            let matchId = 1;
+            
+            for (let i = 0; i < 16; i += 2) {
+                chessData.matches.push({
+                    id: `r16-${matchId}`,
+                    round: 'Round of 16',
+                    player1Id: i + 1,
+                    player2Id: i + 2,
+                    winnerId: null,
+                    result: null,
+                    date: `2026-03-15T${14 + Math.floor(i/4)}:00:00`,
+                    status: 'pending'
+                });
+                matchId++;
+            }
+
+            await saveToDatabase();
+            showAlert('✅ Bracket généré !', 'success');
+            renderAdminPanel();
+            renderBracket();
+        };
+
+        // RENDER BRACKET
+        function renderBracket() {
+            const container = document.getElementById('bracketContainer');
+            if (!chessData.matches.length) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px; color: var(--text-dim);">
+                        <p style="font-size: 1.2rem; margin-bottom: 20px;">Aucun bracket généré</p>
+                        ${isAdmin ? '<p>Allez dans Admin pour générer le bracket initial</p>' : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            const rounds = ['Round of 16', 'Quarter Finals', 'Semi Finals', 'Final'];
+            const matchesByRound = {};
+            
+            rounds.forEach(round => {
+                matchesByRound[round] = chessData.matches.filter(m => m.round === round);
+            });
+
+            let html = '<div class="bracket">';
+            
+            rounds.forEach(round => {
+                if (matchesByRound[round].length > 0) {
+                    html += `
+                        <div class="bracket-round">
+                            <h3>${round === 'Round of 16' ? '8èmes' : round === 'Quarter Finals' ? 'Quarts' : round === 'Semi Finals' ? 'Demi' : 'Finale'}</h3>
+                    `;
+                    
+                    matchesByRound[round].forEach(match => {
+                        const player1 = chessData.players.find(p => p.id === match.player1Id);
+                        const player2 = chessData.players.find(p => p.id === match.player2Id);
+                        
+                        if (!player1 || !player2) return;
+
+                        const p1Winner = match.winnerId === match.player1Id;
+                        const p2Winner = match.winnerId === match.player2Id;
+
+                        html += `
+                            <div class="bracket-match" onclick="openMatchModal('${match.id}')">
+                                <div class="bracket-player ${p1Winner ? 'winner' : p2Winner ? 'loser' : ''}">
+                                    <span class="player-name">${player1.name}</span>
+                                    <span class="player-score">${match.result && match.result.split('-')[0] || ''}</span>
+                                </div>
+                                <div class="bracket-player ${p2Winner ? 'winner' : p1Winner ? 'loser' : ''}">
+                                    <span class="player-name">${player2.name}</span>
+                                    <span class="player-score">${match.result && match.result.split('-')[1] || ''}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // OPEN MATCH MODAL
+        window.openMatchModal = function(matchId) {
+            const match = chessData.matches.find(m => m.id === matchId);
+            if (!match) return;
+
+            const player1 = chessData.players.find(p => p.id === match.player1Id);
+            const player2 = chessData.players.find(p => p.id === match.player2Id);
+
+            const modal = document.getElementById('matchModal');
+            const modalContent = document.getElementById('modalContent');
+
+            const date = new Date(match.date);
+            const dateStr = date.toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            modalContent.innerHTML = `
+                <div style="text-align: center;">
+                    <h2 style="color: var(--primary); margin-bottom: 20px;">${match.round}</h2>
+                    <div style="font-size: 1.5rem; margin: 20px 0;">
+                        <div style="margin: 15px 0; color: var(--text);">${player1.name}</div>
+                        <div style="color: var(--secondary); font-size: 2rem; margin: 15px 0;">
+                            ${match.result || 'vs'}
+                        </div>
+                        <div style="margin: 15px 0; color: var(--text);">${player2.name}</div>
+                    </div>
+                    <div style="color: var(--text-dim); margin-top: 20px;">
+                        📅 ${dateStr}
+                    </div>
+                    ${match.winnerId ? `
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(0, 184, 148, 0.2); border-radius: 10px;">
+                            🏆 Vainqueur: <strong>${chessData.players.find(p => p.id === match.winnerId).name}</strong>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            modal.classList.add('active');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('matchModal').classList.remove('active');
+        };
+
+        // RENDER CALENDAR
+        function renderCalendar() {
+            const container = document.getElementById('calendarGrid');
+            
+            if (!chessData.matches.length) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucun match programmé</p>';
+                return;
+            }
+
+            const matchesByDate = {};
+            
+            chessData.matches.forEach(match => {
+                const date = new Date(match.date);
+                const dateKey = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+                
+                if (!matchesByDate[dateKey]) {
+                    matchesByDate[dateKey] = [];
+                }
+                matchesByDate[dateKey].push(match);
+            });
+
+            let html = '';
+            Object.keys(matchesByDate).forEach(dateKey => {
+                html += `
+                    <div class="calendar-day">
+                        <div class="day-header">${dateKey}</div>
+                `;
+                
+                matchesByDate[dateKey].forEach(match => {
+                    const player1 = chessData.players.find(p => p.id === match.player1Id);
+                    const player2 = chessData.players.find(p => p.id === match.player2Id);
+                    const time = new Date(match.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    html += `
+                        <div class="match-item" onclick="openMatchModal('${match.id}')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>${time}</span>
+                                <span style="font-weight: 600; color: var(--text);">${player1?.name || 'TBD'} vs ${player2?.name || 'TBD'}</span>
+                                <span style="color: var(--text-dim); font-size: 0.9rem;">${match.round}</span>
+                            </div>
+                            ${match.result ? `<div style="text-align: center; margin-top: 10px; color: var(--primary); font-weight: 700;">${match.result}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // RENDER NEWS
+        function renderNews() {
+            const container = document.getElementById('newsGrid');
+            
+            if (!chessData.news || chessData.news.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucune actualité pour le moment</p>';
+                return;
+            }
+
+            let html = '';
+            chessData.news.slice().reverse().forEach((news, index) => {
+                const date = new Date(news.timestamp).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                html += `
+                    <div class="news-card">
+                        <div class="news-title">${news.title}</div>
+                        <div class="news-date">${date}</div>
+                        <div style="color: var(--text); line-height: 1.6;">${news.content}</div>
+                        ${isAdmin ? `
+                            <button onclick="deleteNews(${chessData.news.length - 1 - index})" class="btn btn-danger" style="margin-top: 15px;">
+                                🗑️ Supprimer
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('adminNewsSection').style.display = isAdmin ? 'block' : 'none';
+        }
+
+        window.openNewsModal = function() {
+            const modal = document.getElementById('matchModal');
+            const modalContent = document.getElementById('modalContent');
+
+            modalContent.innerHTML = `
+                <h2 style="color: var(--primary); margin-bottom: 20px;">➕ Nouvelle Actualité</h2>
+                <input type="text" id="newsTitle" placeholder="Titre de l'actualité" style="margin-bottom: 15px;">
+                <textarea id="newsContent" rows="6" placeholder="Contenu..." style="margin-bottom: 15px;"></textarea>
+                <button onclick="addNews()" class="btn" style="width: 100%;">Publier</button>
+            `;
+
+            modal.classList.add('active');
+        };
+
+        window.addNews = async function() {
+            const title = document.getElementById('newsTitle').value.trim();
+            const content = document.getElementById('newsContent').value.trim();
+
+            if (!title || !content) {
+                showAlert('Remplissez tous les champs', 'error');
+                return;
+            }
+
+            if (!chessData.news) chessData.news = [];
+
+            chessData.news.push({
+                id: Date.now(),
+                title: title,
+                content: content,
+                timestamp: Date.now()
+            });
+
+            await saveToDatabase();
+            closeModal();
+            renderNews();
+            showAlert('✅ Actualité publiée', 'success');
+        };
+
+        window.deleteNews = async function(index) {
+            if (!confirm('Supprimer cette actualité ?')) return;
+
+            chessData.news.splice(index, 1);
+            await saveToDatabase();
+            renderNews();
+            showAlert('✅ Actualité supprimée', 'success');
+        };
+
+        // RENDER VOTE
+        function renderVote() {
+            const container = document.getElementById('voteGrid');
+            
+            if (!chessData.players || chessData.players.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucun joueur disponible</p>';
+                return;
+            }
+
+            const visitorId = getVisitorId();
+            const userVote = chessData.votes[visitorId];
+
+            let html = '';
+            chessData.players.forEach(player => {
+                const voteCount = Object.values(chessData.votes).filter(v => v === player.id).length;
+                const hasVoted = userVote === player.id;
+
+                html += `
+                    <div class="vote-card ${hasVoted ? 'voted' : ''}" onclick="voteForPlayer(${player.id})">
+                        <div class="player-avatar">${player.name.charAt(0)}</div>
+                        <div style="font-weight: 700; color: var(--text); margin-bottom: 5px;">${player.name}</div>
+                        <div class="vote-count">${voteCount} vote${voteCount > 1 ? 's' : ''}</div>
+                        ${hasVoted ? '<div style="color: var(--secondary); margin-top: 10px;">✅ Voté</div>' : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        window.voteForPlayer = async function(playerId) {
+            const visitorId = getVisitorId();
+
+            if (chessData.votes[visitorId]) {
+                if (chessData.votes[visitorId] === playerId) {
+                    showAlert('Vous avez déjà voté pour ce joueur', 'error');
+                    return;
+                }
+                if (!confirm('Changer votre vote ?')) return;
+            }
+
+            chessData.votes[visitorId] = playerId;
+            await saveToDatabase();
+            renderVote();
+            showAlert('✅ Vote enregistré !', 'success');
+        };
+
+        function getVisitorId() {
+            let id = localStorage.getItem('chess-visitor-id');
+            if (!id) {
+                id = 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('chess-visitor-id', id);
+            }
+            return id;
+        }
+
+        // ADMIN
+        window.loginAdmin = function() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('adminLoginForm').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                renderAdminPanel();
+                renderNews();
+                showAlert('✅ Connecté en tant qu\'admin', 'success');
+            } else {
+                showAlert('❌ Mot de passe incorrect', 'error');
+            }
+        };
+
+        window.logoutAdmin = function() {
+            isAdmin = false;
+            document.getElementById('adminLoginForm').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+            renderNews();
+            showAlert('Déconnecté', 'success');
+        };
+
+        function renderAdminPanel() {
+            // Render matches list for admin
+            const matchList = document.getElementById('adminMatchList');
+            
+            if (!chessData.matches || chessData.matches.length === 0) {
+                matchList.innerHTML = '<p style="color: var(--text-dim);">Aucun match. Générez le bracket ci-dessous.</p>';
+                return;
+            }
+
+            let html = '';
+            chessData.matches.forEach(match => {
+                const player1 = chessData.players.find(p => p.id === match.player1Id);
+                const player2 = chessData.players.find(p => p.id === match.player2Id);
+
+                if (!player1 || !player2) return;
+
+                html += `
+                    <div style="background: rgba(0, 184, 148, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="font-weight: 700; color: var(--primary); margin-bottom: 10px;">
+                            ${match.round} - ${player1.name} vs ${player2.name}
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" id="result-${match.id}" placeholder="Résultat (ex: 1-0)" value="${match.result || ''}" style="padding: 8px;">
+                            <select id="winner-${match.id}" style="padding: 8px;">
+                                <option value="">Sélectionner vainqueur</option>
+                                <option value="${player1.id}" ${match.winnerId === player1.id ? 'selected' : ''}>${player1.name}</option>
+                                <option value="${player2.id}" ${match.winnerId === player2.id ? 'selected' : ''}>${player2.name}</option>
+                            </select>
+                        </div>
+                        <button onclick="updateMatch('${match.id}')" class="btn" style="width: 100%;">💾 Sauvegarder</button>
+                    </div>
+                `;
+            });
+
+            matchList.innerHTML = html;
+
+            // Render players list
+            const playersList = document.getElementById('adminPlayersList');
+            if (chessData.players && chessData.players.length > 0) {
+                let playersHtml = '<div style="max-height: 300px; overflow-y: auto;">';
+                chessData.players.forEach((player, index) => {
+                    playersHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 184, 148, 0.1); border-radius: 8px; margin-bottom: 10px;">
+                            <div>
+                                <div style="font-weight: 700; color: var(--text);">${player.name}</div>
+                                <div style="font-size: 0.9rem; color: var(--text-dim);">ELO: ${player.rating}</div>
+                            </div>
+                            <input type="text" id="player-name-${player.id}" value="${player.name}" placeholder="Nom" style="width: 150px; padding: 8px; margin-right: 10px;">
+                            <button onclick="updatePlayerName(${player.id})" class="btn">✏️</button>
+                        </div>
+                    `;
+                });
+                playersHtml += '</div>';
+                playersList.innerHTML = playersHtml;
+            } else {
+                playersList.innerHTML = '<p style="color: var(--text-dim);">Aucun joueur. Générez le bracket ci-dessous.</p>';
+            }
+        }
+
+        window.updateMatch = async function(matchId) {
+            const match = chessData.matches.find(m => m.id === matchId);
+            if (!match) return;
+
+            const result = document.getElementById(`result-${matchId}`).value.trim();
+            const winnerId = parseInt(document.getElementById(`winner-${matchId}`).value);
+
+            if (result) match.result = result;
+            if (winnerId) {
+                match.winnerId = winnerId;
+                match.status = 'completed';
+                
+                // Advance winner to next round
+                advanceWinner(match);
+            }
+
+            await saveToDatabase();
+            renderBracket();
+            renderCalendar();
+            showAlert('✅ Match mis à jour', 'success');
+        };
+
+        function advanceWinner(match) {
+            // Logic to create next round matches automatically
+            // This is a simplified version - you can expand it
+            const currentRound = match.round;
+            let nextRound = '';
+            
+            if (currentRound === 'Round of 16') nextRound = 'Quarter Finals';
+            else if (currentRound === 'Quarter Finals') nextRound = 'Semi Finals';
+            else if (currentRound === 'Semi Finals') nextRound = 'Final';
+            
+            if (!nextRound) return;
+
+            // Check if next round match already exists
+            const matchIndex = parseInt(match.id.split('-')[1]);
+            const nextMatchIndex = Math.ceil(matchIndex / 2);
+            const nextMatchId = `${nextRound.toLowerCase().replace(/ /g, '-')}-${nextMatchIndex}`;
+
+            let nextMatch = chessData.matches.find(m => m.id === nextMatchId);
+            
+            if (!nextMatch) {
+                // Create next round match
+                nextMatch = {
+                    id: nextMatchId,
+                    round: nextRound,
+                    player1Id: matchIndex % 2 === 1 ? match.winnerId : null,
+                    player2Id: matchIndex % 2 === 0 ? match.winnerId : null,
+                    winnerId: null,
+                    result: null,
+                    date: new Date(Date.parse(match.date) + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days later
+                    status: 'pending'
+                };
+                chessData.matches.push(nextMatch);
+            } else {
+                // Update existing next round match
+                if (matchIndex % 2 === 1) {
+                    nextMatch.player1Id = match.winnerId;
+                } else {
+                    nextMatch.player2Id = match.winnerId;
+                }
+            }
+        }
+
+        window.updatePlayerName = async function(playerId) {
+            const newName = document.getElementById(`player-name-${playerId}`).value.trim();
+            if (!newName) {
+                showAlert('Nom vide', 'error');
+                return;
+            }
+
+            const player = chessData.players.find(p => p.id === playerId);
+            if (player) {
+                player.name = newName;
+                await saveToDatabase();
+                renderBracket();
+                renderCalendar();
+                renderVote();
+                renderAdminPanel();
+                showAlert('✅ Nom mis à jour', 'success');
+            }
+        };
+
+        // INIT
+        async function init() {
+            showLoading(true);
+
+            const dbRef = ref(database, 'chess');
+            onValue(dbRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    chessData = snapshot.val();
+                    
+                    // Ensure arrays exist
+                    if (!chessData.players) chessData.players = [];
+                    if (!chessData.matches) chessData.matches = [];
+                    if (!chessData.news) chessData.news = [];
+                    if (!chessData.votes) chessData.votes = {};
+                    
+                    renderBracket();
+                    renderCalendar();
+                    renderNews();
+                    renderVote();
+                    
+                    if (isAdmin) {
+                        renderAdminPanel();
+                    }
+                    
+                    console.log('✅ Chess data loaded');
+                }
+                showLoading(false);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
