@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDGSR Volleyball Tournament 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Righteous&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00b894;
+            --primary-dark: #00916d;
+            --secondary: #fdcb6e;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --dark-light: #636e72;
+            --bg: #0a0e27;
+            --bg-light: #141937;
+            --text: #dfe6e9;
+            --text-dim: #b2bec3;
+            --card: #1e2139;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f6fa;
+            --bg-light: #ffffff;
+            --text: #2d3436;
+            --text-dim: #636e72;
+            --card: #ffffff;
+            --dark: #f5f6fa;
+            --dark-light: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg) 100%);
+        }
+
+        h1 {
+            font-family: 'Righteous', cursive;
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            background: var(--bg-light);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: var(--card);
+            color: var(--text);
+            border: 2px solid transparent;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .bracket-container {
+            overflow-x: auto;
+            padding: 40px 20px;
+        }
+
+        .bracket {
+            display: flex;
+            gap: 80px;
+            min-width: 900px;
+            justify-content: center;
+        }
+
+        .bracket-round {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .bracket-round h3 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-family: 'Righteous', cursive;
+        }
+
+        .bracket-match {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .bracket-match:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .bracket-player {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            background: rgba(0, 184, 148, 0.05);
+        }
+
+        .bracket-player.winner {
+            background: rgba(0, 184, 148, 0.2);
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .bracket-player.loser {
+            opacity: 0.5;
+        }
+
+        .player-name {
+            flex: 1;
+        }
+
+        .player-score {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-left: 15px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .calendar-day {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .day-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-family: 'Righteous', cursive;
+        }
+
+        .match-item {
+            background: rgba(0, 184, 148, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .match-item:hover {
+            background: rgba(0, 184, 148, 0.2);
+            transform: translateX(5px);
+        }
+
+        .news-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .news-card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .news-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .news-date {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .vote-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .vote-card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .vote-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .vote-card.voted {
+            border-color: var(--secondary);
+            background: rgba(253, 203, 110, 0.1);
+        }
+
+        .team-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 15px;
+            font-weight: 700;
+        }
+
+        .vote-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        .admin-login {
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: rgba(0, 184, 148, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Barlow', sans-serif;
+        }
+
+        button, .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        button:hover, .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--accent);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 184, 148, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .alert.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .alert.error {
+            background: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .bracket {
+                gap: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" title="Changer le thème">🌙</button>
+    
+    <div class="loading" id="loadingIndicator">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <div class="alert" id="alertBox"></div>
+
+    <div class="container">
+        <header>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <a href="index.html" style="display: inline-flex; align-items: center; gap: 10px; background: rgba(0, 184, 148, 0.1); color: var(--primary); padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; border: 2px solid var(--primary); transition: all 0.3s ease;">
+                    🏠 Accueil Sports
+                </a>
+            </div>
+
+            <h1>🏐 VOLLEYBALL TOURNAMENT 2026</h1>
+            <p class="subtitle">GDGSR Ramadan Volleyball Championship</p>
+            <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <span style="background: rgba(0, 184, 148, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--text);">
+                    👥 8 Équipes
+                </span>
+                <span style="background: rgba(0, 184, 148, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--text);">
+                    🏆 Élimination Directe
+                </span>
+                <span style="background: rgba(0, 184, 148, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--text);">
+                    📅 25-28 Mars 2026
+                </span>
+            </div>
+        </header>
+
+        <nav>
+            <button class="nav-btn active" onclick="showSection('bracket')">🏆 Bracket</button>
+            <button class="nav-btn" onclick="showSection('calendar')">📅 Calendrier</button>
+            <button class="nav-btn" onclick="showSection('news')">📰 Actualités</button>
+            <button class="nav-btn" onclick="showSection('vote')">🗳️ Vote</button>
+            <button class="nav-btn" onclick="showSection('admin')">👤 Admin</button>
+        </nav>
+
+        <!-- BRACKET -->
+        <div id="bracket" class="section active">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                🏆 Tableau du Tournoi
+            </h2>
+            <div class="bracket-container" id="bracketContainer"></div>
+        </div>
+
+        <!-- CALENDAR -->
+        <div id="calendar" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                📅 Calendrier des Matchs
+            </h2>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
+        <!-- NEWS -->
+        <div id="news" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                📰 Actualités
+            </h2>
+            <div class="news-grid" id="newsGrid"></div>
+            <div id="adminNewsSection" style="margin-top: 30px; text-align: center; display: none;">
+                <button onclick="openNewsModal()" class="btn">➕ Ajouter une actualité</button>
+            </div>
+        </div>
+
+        <!-- VOTE -->
+        <div id="vote" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                🗳️ Votez pour la Meilleure Équipe
+            </h2>
+            <div class="vote-grid" id="voteGrid"></div>
+        </div>
+
+        <!-- ADMIN -->
+        <div id="admin" class="section">
+            <h2 style="text-align: center; color: var(--secondary); font-family: 'Righteous', cursive; margin-bottom: 30px; font-size: 2rem;">
+                👤 Administration
+            </h2>
+            
+            <div id="adminLoginForm" class="admin-login">
+                <h3 style="text-align: center; color: var(--primary); margin-bottom: 20px;">Connexion Admin</h3>
+                <input type="password" id="adminPassword" placeholder="Mot de passe admin">
+                <button onclick="loginAdmin()" style="width: 100%; margin-top: 10px;">Se connecter</button>
+            </div>
+
+            <div id="adminPanel" class="admin-panel">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <button onclick="logoutAdmin()" class="btn btn-danger">Déconnexion</button>
+                </div>
+                <div style="display: grid; gap: 30px;">
+                    <div style="background: var(--card); padding: 25px; border-radius: 15px; border: 2px solid rgba(0, 184, 148, 0.3);">
+                        <h3 style="color: var(--primary); margin-bottom: 20px;">📊 Mettre à jour les résultats</h3>
+                        <div id="adminMatchList"></div>
+                    </div>
+                    <div style="background: var(--card); padding: 25px; border-radius: 15px; border: 2px solid rgba(0, 184, 148, 0.3);">
+                        <h3 style="color: var(--primary); margin-bottom: 20px;">👥 Gérer les Équipes</h3>
+                        <div id="adminTeamsList"></div>
+                        <button onclick="generateInitialBracket()" class="btn" style="margin-top: 15px;">
+                            🔄 Générer le Bracket Initial
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="matchModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLqEyNDKe1Kcqq89DcBybLjLU3MmrXxXA",
+            authDomain: "gdgsrramadan.firebaseapp.com",
+            databaseURL: "https://gdgsrramadan-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "gdgsrramadan",
+            storageBucket: "gdgsrramadan.firebasestorage.app",
+            messagingSenderId: "906023044466",
+            appId: "1:906023044466:web:84ba0c826f2d14f2f9e9e0",
+            measurementId: "G-T8WYVYWZZN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let volleyballData = {
+            teams: [],
+            matches: [],
+            news: [],
+            votes: {}
+        };
+
+        let isAdmin = false;
+        const ADMIN_PASSWORD = "thegoat2008";
+
+        window.toggleTheme = function() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const button = document.getElementById('themeToggle');
+            
+            html.setAttribute('data-theme', newTheme);
+            button.textContent = newTheme === 'light' ? '🌙' : '☀️';
+            localStorage.setItem('volleyball-theme', newTheme);
+        };
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('volleyball-theme') || 'dark';
+            const html = document.documentElement;
+            const button = document.getElementById('themeToggle');
+            
+            if (savedTheme === 'light') {
+                html.setAttribute('data-theme', 'light');
+                if (button) button.textContent = '🌙';
+            }
+        }
+
+        loadTheme();
+
+        window.showSection = function(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+        };
+
+        window.showAlert = function(message, type = 'success') {
+            const alert = document.getElementById('alertBox');
+            alert.textContent = message;
+            alert.className = `alert show ${type}`;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 3000);
+        };
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').classList.toggle('active', show);
+        }
+
+        async function saveToDatabase() {
+            try {
+                await set(ref(database, 'volleyball'), volleyballData);
+                console.log('✅ Données sauvegardées');
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde:', error);
+                showAlert('Erreur de sauvegarde', 'error');
+            }
+        }
+
+        window.generateInitialBracket = async function() {
+            if (!confirm('Générer le bracket initial avec 8 équipes ?')) return;
+
+            volleyballData.teams = [];
+            for (let i = 1; i <= 8; i++) {
+                volleyballData.teams.push({
+                    id: i,
+                    name: `Équipe ${i}`,
+                    level: ['Amateur', 'Intermédiaire', 'Avancé'][Math.floor(Math.random() * 3)]
+                });
+            }
+
+            volleyballData.matches = [];
+            let matchId = 1;
+            
+            // Quarter Finals (4 matches)
+            for (let i = 0; i < 8; i += 2) {
+                volleyballData.matches.push({
+                    id: `qf-${matchId}`,
+                    round: 'Quarter Finals',
+                    team1Id: i + 1,
+                    team2Id: i + 2,
+                    winnerId: null,
+                    result: null,
+                    date: `2026-03-25T${14 + Math.floor(i/2)}:00:00`,
+                    status: 'pending'
+                });
+                matchId++;
+            }
+
+            await saveToDatabase();
+            showAlert('✅ Bracket généré !', 'success');
+            renderAdminPanel();
+            renderBracket();
+        };
+
+        function renderBracket() {
+            const container = document.getElementById('bracketContainer');
+            if (!volleyballData.matches.length) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px; color: var(--text-dim);">
+                        <p style="font-size: 1.2rem; margin-bottom: 20px;">Aucun bracket généré</p>
+                        ${isAdmin ? '<p>Allez dans Admin pour générer le bracket initial</p>' : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            const rounds = ['Quarter Finals', 'Semi Finals', 'Final'];
+            const matchesByRound = {};
+            
+            rounds.forEach(round => {
+                matchesByRound[round] = volleyballData.matches.filter(m => m.round === round);
+            });
+
+            let html = '<div class="bracket">';
+            
+            rounds.forEach(round => {
+                if (matchesByRound[round].length > 0) {
+                    html += `
+                        <div class="bracket-round">
+                            <h3>${round === 'Quarter Finals' ? 'Quarts' : round === 'Semi Finals' ? 'Demi' : 'Finale'}</h3>
+                    `;
+                    
+                    matchesByRound[round].forEach(match => {
+                        const team1 = volleyballData.teams.find(t => t.id === match.team1Id);
+                        const team2 = volleyballData.teams.find(t => t.id === match.team2Id);
+                        
+                        if (!team1 || !team2) return;
+
+                        const t1Winner = match.winnerId === match.team1Id;
+                        const t2Winner = match.winnerId === match.team2Id;
+
+                        html += `
+                            <div class="bracket-match" onclick="openMatchModal('${match.id}')">
+                                <div class="bracket-player ${t1Winner ? 'winner' : t2Winner ? 'loser' : ''}">
+                                    <span class="player-name">${team1.name}</span>
+                                    <span class="player-score">${match.result && match.result.split('-')[0] || ''}</span>
+                                </div>
+                                <div class="bracket-player ${t2Winner ? 'winner' : t1Winner ? 'loser' : ''}">
+                                    <span class="player-name">${team2.name}</span>
+                                    <span class="player-score">${match.result && match.result.split('-')[1] || ''}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        window.openMatchModal = function(matchId) {
+            const match = volleyballData.matches.find(m => m.id === matchId);
+            if (!match) return;
+
+            const team1 = volleyballData.teams.find(t => t.id === match.team1Id);
+            const team2 = volleyballData.teams.find(t => t.id === match.team2Id);
+
+            const modal = document.getElementById('matchModal');
+            const modalContent = document.getElementById('modalContent');
+
+            const date = new Date(match.date);
+            const dateStr = date.toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            modalContent.innerHTML = `
+                <div style="text-align: center;">
+                    <h2 style="color: var(--primary); margin-bottom: 20px;">${match.round}</h2>
+                    <div style="font-size: 1.5rem; margin: 20px 0;">
+                        <div style="margin: 15px 0; color: var(--text);">${team1.name}</div>
+                        <div style="color: var(--secondary); font-size: 2rem; margin: 15px 0;">
+                            ${match.result || 'vs'}
+                        </div>
+                        <div style="margin: 15px 0; color: var(--text);">${team2.name}</div>
+                    </div>
+                    <div style="color: var(--text-dim); margin-top: 20px;">
+                        📅 ${dateStr}
+                    </div>
+                    ${match.result ? `
+                        <div style="margin-top: 15px; color: var(--text-dim); font-size: 0.9rem;">
+                            Best of 5 sets
+                        </div>
+                    ` : ''}
+                    ${match.winnerId ? `
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(0, 184, 148, 0.2); border-radius: 10px;">
+                            🏆 Vainqueur: <strong>${volleyballData.teams.find(t => t.id === match.winnerId).name}</strong>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            modal.classList.add('active');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('matchModal').classList.remove('active');
+        };
+
+        function renderCalendar() {
+            const container = document.getElementById('calendarGrid');
+            
+            if (!volleyballData.matches.length) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucun match programmé</p>';
+                return;
+            }
+
+            const matchesByDate = {};
+            
+            volleyballData.matches.forEach(match => {
+                const date = new Date(match.date);
+                const dateKey = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+                
+                if (!matchesByDate[dateKey]) {
+                    matchesByDate[dateKey] = [];
+                }
+                matchesByDate[dateKey].push(match);
+            });
+
+            let html = '';
+            Object.keys(matchesByDate).forEach(dateKey => {
+                html += `
+                    <div class="calendar-day">
+                        <div class="day-header">${dateKey}</div>
+                `;
+                
+                matchesByDate[dateKey].forEach(match => {
+                    const team1 = volleyballData.teams.find(t => t.id === match.team1Id);
+                    const team2 = volleyballData.teams.find(t => t.id === match.team2Id);
+                    const time = new Date(match.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    html += `
+                        <div class="match-item" onclick="openMatchModal('${match.id}')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>${time}</span>
+                                <span style="font-weight: 600; color: var(--text);">${team1?.name || 'TBD'} vs ${team2?.name || 'TBD'}</span>
+                                <span style="color: var(--text-dim); font-size: 0.9rem;">${match.round}</span>
+                            </div>
+                            ${match.result ? `<div style="text-align: center; margin-top: 10px; color: var(--primary); font-weight: 700;">${match.result}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderNews() {
+            const container = document.getElementById('newsGrid');
+            
+            if (!volleyballData.news || volleyballData.news.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucune actualité pour le moment</p>';
+                return;
+            }
+
+            let html = '';
+            volleyballData.news.slice().reverse().forEach((news, index) => {
+                const date = new Date(news.timestamp).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                html += `
+                    <div class="news-card">
+                        <div class="news-title">${news.title}</div>
+                        <div class="news-date">${date}</div>
+                        <div style="color: var(--text); line-height: 1.6;">${news.content}</div>
+                        ${isAdmin ? `
+                            <button onclick="deleteNews(${volleyballData.news.length - 1 - index})" class="btn btn-danger" style="margin-top: 15px;">
+                                🗑️ Supprimer
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('adminNewsSection').style.display = isAdmin ? 'block' : 'none';
+        }
+
+        window.openNewsModal = function() {
+            const modal = document.getElementById('matchModal');
+            const modalContent = document.getElementById('modalContent');
+
+            modalContent.innerHTML = `
+                <h2 style="color: var(--primary); margin-bottom: 20px;">➕ Nouvelle Actualité</h2>
+                <input type="text" id="newsTitle" placeholder="Titre de l'actualité" style="margin-bottom: 15px;">
+                <textarea id="newsContent" rows="6" placeholder="Contenu..." style="margin-bottom: 15px;"></textarea>
+                <button onclick="addNews()" class="btn" style="width: 100%;">Publier</button>
+            `;
+
+            modal.classList.add('active');
+        };
+
+        window.addNews = async function() {
+            const title = document.getElementById('newsTitle').value.trim();
+            const content = document.getElementById('newsContent').value.trim();
+
+            if (!title || !content) {
+                showAlert('Remplissez tous les champs', 'error');
+                return;
+            }
+
+            if (!volleyballData.news) volleyballData.news = [];
+
+            volleyballData.news.push({
+                id: Date.now(),
+                title: title,
+                content: content,
+                timestamp: Date.now()
+            });
+
+            await saveToDatabase();
+            closeModal();
+            renderNews();
+            showAlert('✅ Actualité publiée', 'success');
+        };
+
+        window.deleteNews = async function(index) {
+            if (!confirm('Supprimer cette actualité ?')) return;
+
+            volleyballData.news.splice(index, 1);
+            await saveToDatabase();
+            renderNews();
+            showAlert('✅ Actualité supprimée', 'success');
+        };
+
+        function renderVote() {
+            const container = document.getElementById('voteGrid');
+            
+            if (!volleyballData.teams || volleyballData.teams.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 40px;">Aucune équipe disponible</p>';
+                return;
+            }
+
+            const visitorId = getVisitorId();
+            const userVote = volleyballData.votes[visitorId];
+
+            let html = '';
+            volleyballData.teams.forEach(team => {
+                const voteCount = Object.values(volleyballData.votes).filter(v => v === team.id).length;
+                const hasVoted = userVote === team.id;
+
+                html += `
+                    <div class="vote-card ${hasVoted ? 'voted' : ''}" onclick="voteForTeam(${team.id})">
+                        <div class="team-avatar">🏐</div>
+                        <div style="font-weight: 700; color: var(--text); margin-bottom: 5px;">${team.name}</div>
+                        <div class="vote-count">${voteCount} vote${voteCount > 1 ? 's' : ''}</div>
+                        ${hasVoted ? '<div style="color: var(--secondary); margin-top: 10px;">✅ Voté</div>' : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        window.voteForTeam = async function(teamId) {
+            const visitorId = getVisitorId();
+
+            if (volleyballData.votes[visitorId]) {
+                if (volleyballData.votes[visitorId] === teamId) {
+                    showAlert('Vous avez déjà voté pour cette équipe', 'error');
+                    return;
+                }
+                if (!confirm('Changer votre vote ?')) return;
+            }
+
+            volleyballData.votes[visitorId] = teamId;
+            await saveToDatabase();
+            renderVote();
+            showAlert('✅ Vote enregistré !', 'success');
+        };
+
+        function getVisitorId() {
+            let id = localStorage.getItem('volleyball-visitor-id');
+            if (!id) {
+                id = 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('volleyball-visitor-id', id);
+            }
+            return id;
+        }
+
+        window.loginAdmin = function() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('adminLoginForm').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                renderAdminPanel();
+                renderNews();
+                showAlert('✅ Connecté en tant qu\'admin', 'success');
+            } else {
+                showAlert('❌ Mot de passe incorrect', 'error');
+            }
+        };
+
+        window.logoutAdmin = function() {
+            isAdmin = false;
+            document.getElementById('adminLoginForm').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+            renderNews();
+            showAlert('Déconnecté', 'success');
+        };
+
+        function renderAdminPanel() {
+            const matchList = document.getElementById('adminMatchList');
+            
+            if (!volleyballData.matches || volleyballData.matches.length === 0) {
+                matchList.innerHTML = '<p style="color: var(--text-dim);">Aucun match. Générez le bracket ci-dessous.</p>';
+                return;
+            }
+
+            let html = '';
+            volleyballData.matches.forEach(match => {
+                const team1 = volleyballData.teams.find(t => t.id === match.team1Id);
+                const team2 = volleyballData.teams.find(t => t.id === match.team2Id);
+
+                if (!team1 || !team2) return;
+
+                html += `
+                    <div style="background: rgba(0, 184, 148, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="font-weight: 700; color: var(--primary); margin-bottom: 10px;">
+                            ${match.round} - ${team1.name} vs ${team2.name}
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" id="result-${match.id}" placeholder="Score (ex: 3-1)" value="${match.result || ''}" style="padding: 8px;">
+                            <select id="winner-${match.id}" style="padding: 8px;">
+                                <option value="">Sélectionner vainqueur</option>
+                                <option value="${team1.id}" ${match.winnerId === team1.id ? 'selected' : ''}>${team1.name}</option>
+                                <option value="${team2.id}" ${match.winnerId === team2.id ? 'selected' : ''}>${team2.name}</option>
+                            </select>
+                        </div>
+                        <button onclick="updateMatch('${match.id}')" class="btn" style="width: 100%;">💾 Sauvegarder</button>
+                    </div>
+                `;
+            });
+
+            matchList.innerHTML = html;
+
+            const teamsList = document.getElementById('adminTeamsList');
+            if (volleyballData.teams && volleyballData.teams.length > 0) {
+                let teamsHtml = '<div style="max-height: 300px; overflow-y: auto;">';
+                volleyballData.teams.forEach((team) => {
+                    teamsHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 184, 148, 0.1); border-radius: 8px; margin-bottom: 10px;">
+                            <div>
+                                <div style="font-weight: 700; color: var(--text);">${team.name}</div>
+                                <div style="font-size: 0.9rem; color: var(--text-dim);">Niveau: ${team.level}</div>
+                            </div>
+                            <input type="text" id="team-name-${team.id}" value="${team.name}" placeholder="Nom" style="width: 150px; padding: 8px; margin-right: 10px;">
+                            <button onclick="updateTeamName(${team.id})" class="btn">✏️</button>
+                        </div>
+                    `;
+                });
+                teamsHtml += '</div>';
+                teamsList.innerHTML = teamsHtml;
+            } else {
+                teamsList.innerHTML = '<p style="color: var(--text-dim);">Aucune équipe. Générez le bracket ci-dessous.</p>';
+            }
+        }
+
+        window.updateMatch = async function(matchId) {
+            const match = volleyballData.matches.find(m => m.id === matchId);
+            if (!match) return;
+
+            const result = document.getElementById(`result-${matchId}`).value.trim();
+            const winnerId = parseInt(document.getElementById(`winner-${matchId}`).value);
+
+            if (result) match.result = result;
+            if (winnerId) {
+                match.winnerId = winnerId;
+                match.status = 'completed';
+                advanceWinner(match);
+            }
+
+            await saveToDatabase();
+            renderBracket();
+            renderCalendar();
+            showAlert('✅ Match mis à jour', 'success');
+        };
+
+        function advanceWinner(match) {
+            const currentRound = match.round;
+            let nextRound = '';
+            
+            if (currentRound === 'Quarter Finals') nextRound = 'Semi Finals';
+            else if (currentRound === 'Semi Finals') nextRound = 'Final';
+            
+            if (!nextRound) return;
+
+            const matchIndex = parseInt(match.id.split('-')[1]);
+            const nextMatchIndex = Math.ceil(matchIndex / 2);
+            const nextMatchId = `${nextRound.toLowerCase().replace(/ /g, '-')}-${nextMatchIndex}`;
+
+            let nextMatch = volleyballData.matches.find(m => m.id === nextMatchId);
+            
+            if (!nextMatch) {
+                nextMatch = {
+                    id: nextMatchId,
+                    round: nextRound,
+                    team1Id: matchIndex % 2 === 1 ? match.winnerId : null,
+                    team2Id: matchIndex % 2 === 0 ? match.winnerId : null,
+                    winnerId: null,
+                    result: null,
+                    date: new Date(Date.parse(match.date) + 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    status: 'pending'
+                };
+                volleyballData.matches.push(nextMatch);
+            } else {
+                if (matchIndex % 2 === 1) {
+                    nextMatch.team1Id = match.winnerId;
+                } else {
+                    nextMatch.team2Id = match.winnerId;
+                }
+            }
+        }
+
+        window.updateTeamName = async function(teamId) {
+            const newName = document.getElementById(`team-name-${teamId}`).value.trim();
+            if (!newName) {
+                showAlert('Nom vide', 'error');
+                return;
+            }
+
+            const team = volleyballData.teams.find(t => t.id === teamId);
+            if (team) {
+                team.name = newName;
+                await saveToDatabase();
+                renderBracket();
+                renderCalendar();
+                renderVote();
+                renderAdminPanel();
+                showAlert('✅ Nom mis à jour', 'success');
+            }
+        };
+
+        async function init() {
+            showLoading(true);
+
+            const dbRef = ref(database, 'volleyball');
+            onValue(dbRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    volleyballData = snapshot.val();
+                    
+                    if (!volleyballData.teams) volleyballData.teams = [];
+                    if (!volleyballData.matches) volleyballData.matches = [];
+                    if (!volleyballData.news) volleyballData.news = [];
+                    if (!volleyballData.votes) volleyballData.votes = {};
+                    
+                    renderBracket();
+                    renderCalendar();
+                    renderNews();
+                    renderVote();
+                    
+                    if (isAdmin) {
+                        renderAdminPanel();
+                    }
+                    
+                    console.log('✅ Volleyball data loaded');
+                }
+                showLoading(false);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
